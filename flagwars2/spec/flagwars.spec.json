@@ -1,0 +1,112 @@
+{
+  "$schema": "https://flagwars.spec/schema/1.0.json",
+  "metadata": {
+    "name": "FlagWars Config",
+    "version": "1.0.0",
+    "stage": "staging",
+    "network": "base-sepolia",
+    "chainId": 84532,
+    "effectiveAtBlock": 0,
+    "specHash": "sha256:TO_FILL_AFTER_FREEZE"
+  },
+  "addresses": {
+    "core": "0x1c749BF6F2ccC3121b4413Aa49a9C7FaEa374d82",
+    "achievements": "0x1c749BF6F2ccC3121b4413Aa49a9C7FaEa374d82",
+    "paymentToken": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "treasury": "0x1c749BF6F2ccC3121b4413Aa49a9C7FaEa374d82",
+    "revenue": "0x1c749BF6F2ccC3121b4413Aa49a9C7FaEa374d82",
+    "commissions": "0x1c749BF6F2ccC3121b4413Aa49a9C7FaEa374d82"
+  },
+  "tokens": {
+    "payment": {
+      "symbol": "USDC",
+      "decimals": 6,
+      "unit": "USDC6"
+    },
+    "countryToken": {
+      "symbol": "FLAG",
+      "decimals": 18,
+      "unit": "TOKEN18"
+    }
+  },
+  "pricing": {
+    "model": "STATIC_HALF_STEP",
+    "params": {
+      "kappa": "0.00055",
+      "lambda": "0.0005555",
+      "priceMin": "0.01",
+      "pricePrecision": "0.00000001"
+    },
+    "units": {
+      "kappa": "FLOAT",
+      "lambda": "FLOAT",
+      "priceMin": "USDC",
+      "pricePrecision": "USDC"
+    }
+  },
+  "fees": {
+    "buyFeeBps": 0,
+    "sellFeeBps": 500,
+    "referralShareBps": 3000,
+    "revenueShareBps": 7000,
+    "units": {
+      "buyFeeBps": "BPS",
+      "sellFeeBps": "BPS",
+      "referralShareBps": "BPS",
+      "revenueShareBps": "BPS"
+    }
+  },
+  "attack": {
+    "freeAttackLimit": 2,
+    "feeTiers": [
+      { "threshold": 5, "thresholdUnit": "PRICE", "fee": "0.30", "feeUnit": "USDC", "delta": "0.0013", "deltaUnit": "FLOAT" },
+      { "threshold": 10, "thresholdUnit": "PRICE", "fee": "0.35", "feeUnit": "USDC", "delta": "0.0011", "deltaUnit": "FLOAT" },
+      { "threshold": 15, "thresholdUnit": "PRICE", "fee": "0.40", "feeUnit": "USDC", "delta": "0.0009", "deltaUnit": "FLOAT" }
+    ],
+    "spamLimits": {
+      "perTargetPerMin": 5,
+      "totalPerMin": 20,
+      "units": { "perTargetPerMin": "COUNT", "totalPerMin": "COUNT" }
+    }
+  },
+  "warBalance": {
+    "wb1": { "threshold": 2000, "thresholdUnit": "COUNT", "windowSec": 300, "multiplierBps": 6000 },
+    "wb2": { "threshold": 10000, "thresholdUnit": "COUNT", "windowSec": 3600, "multiplierBps": 8000 },
+    "units": { "windowSec": "SECONDS", "multiplierBps": "BPS" }
+  },
+  "antiDump": {
+    "tiers": [
+      { "thresholdPctBps": 1000, "extraFeeBps": 500, "cooldownSec": 60 },
+      { "thresholdPctBps": 1500, "extraFeeBps": 800, "cooldownSec": 300 },
+      { "thresholdPctBps": 2000, "extraFeeBps": 1200, "cooldownSec": 1200 },
+      { "thresholdPctBps": 2500, "extraFeeBps": 1500, "cooldownSec": 14400 }
+    ],
+    "units": { "thresholdPctBps": "PCT_BPS", "extraFeeBps": "BPS", "cooldownSec": "SECONDS" }
+  },
+  "achievements": {
+    "mintFee": "0.20",
+    "mintFeeUnit": "USDC",
+    "sbtTransferable": false
+  },
+  "dustProtection": {
+    "minBuyUsdc": "0.01",
+    "minSellUsdc": "0.01",
+    "units": { "minBuyUsdc": "USDC", "minSellUsdc": "USDC" }
+  },
+  "featureFlags": {
+    "requireUsdcApproval": true,
+    "sseAuthRequired": true,
+    "maintenanceMode": false
+  },
+  "security": {
+    "jwtExpSeconds": 172800,
+    "siweDomains": ["localhost", "flagwars.dev", "flagwars.app"],
+    "allowedOrigins": ["http://localhost:3000"],
+    "rateLimit": { "windowSec": 60, "maxReq": 10 }
+  },
+  "testVectors": {
+    "buy": { "countryId": 90, "amountToken": "1.0" },
+    "sell": { "countryId": 90, "amountToken": "0.5" },
+    "attack": { "fromId": 90, "toId": 44, "amountToken": "0.1" }
+  }
+}

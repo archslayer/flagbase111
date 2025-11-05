@@ -1,0 +1,70 @@
+{
+  "pre": {
+    "core": "0x40d06FC3c37854E9248be4184ee1161C44af7D48",
+    "caps": {
+      "paused": false,
+      "hasGetConfig": true
+    },
+    "from": {
+      "id": 90,
+      "name": "Turkey",
+      "price8": "500027500",
+      "totalSupply": "50000000000000000000000",
+      "attacks": "0",
+      "exists": true
+    },
+    "to": {
+      "id": 44,
+      "name": "UK",
+      "price8": "499972500",
+      "totalSupply": "50000000000000000000000",
+      "attacks": "0",
+      "exists": true
+    },
+    "attackFeeWei": "100000000000000"
+  },
+  "buyRes": {
+    "skipped": true,
+    "reason": "READ_ONLY_MODE"
+  },
+  "sellRes": {
+    "skipped": true,
+    "reason": "READ_ONLY_MODE"
+  },
+  "atkRes": {
+    "skipped": true,
+    "reason": "READ_ONLY_MODE"
+  },
+  "analysis": {
+    "buy": {
+      "skipped": true,
+      "reason": "READ_ONLY_MODE"
+    },
+    "sell": {
+      "skipped": true,
+      "reason": "READ_ONLY_MODE"
+    },
+    "attack": {
+      "skipped": true,
+      "reason": "READ_ONLY_MODE"
+    },
+    "final_snapshot": {
+      "from": {
+        "id": 90,
+        "name": "Turkey",
+        "price8": "500027500",
+        "totalSupply": "50000000000000000000000",
+        "attacks": "0",
+        "exists": true
+      },
+      "to": {
+        "id": 44,
+        "name": "UK",
+        "price8": "499972500",
+        "totalSupply": "50000000000000000000000",
+        "attacks": "0",
+        "exists": true
+      }
+    }
+  }
+}
