@@ -1,3 +1,8 @@
 {
-  "/_not-found/page": "app/_not-found/page.js"
+  "/page": "app/page.js",
+  "/quests/page": "app/quests/page.js",
+  "/api/free-attack/my/route": "app/api/free-attack/my/route.js",
+  "/api/countries/userBalance/route": "app/api/countries/userBalance/route.js",
+  "/api/me/route": "app/api/me/route.js",
+  "/api/quests/my/route": "app/api/quests/my/route.js"
 }

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createPublicClient, http, parseAbi } from 'viem'
 import { baseSepolia } from 'viem/chains'
 
+export const dynamic = 'force-dynamic'
+
 const CORE_ADDRESS = process.env.NEXT_PUBLIC_CORE_ADDRESS as `0x${string}`
 const RPC = process.env.NEXT_PUBLIC_RPC_BASE_SEPOLIA || 'https://sepolia.base.org'
 
