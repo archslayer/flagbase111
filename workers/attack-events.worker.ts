@@ -14,7 +14,7 @@ type AttackJob = {
   user: `0x${string}`
   fromId: number
   toId: number
-  amountToken18: string
+  // amountToken18 removed - attacks are now fixed single attacks
   txHash: `0x${string}`
   blockNumber?: number | string
   feeUSDC6?: string
@@ -70,7 +70,7 @@ const processor = makeWorker<AttackJob>('attack-events', async ({ data, id }) =>
           userLower,
           fromId: data.fromId,
           toId: data.toId,
-          amountToken18: data.amountToken18,
+          amountToken18: '0', // Fixed attacks - no amount parameter
           txHash: data.txHash,
           logIndex,
           blockNumber: typeof data.blockNumber === 'string' ? parseInt(data.blockNumber, 10) : data.blockNumber || 0,

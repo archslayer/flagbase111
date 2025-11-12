@@ -23,10 +23,20 @@ import type {
   TypedContractMethod,
 } from "../../common";
 
+export declare namespace FlagWarsCore {
+  export type AttackItemStruct = { fromId: BigNumberish; toId: BigNumberish };
+
+  export type AttackItemStructOutput = [fromId: bigint, toId: bigint] & {
+    fromId: bigint;
+    toId: bigint;
+  };
+}
+
 export interface FlagWarsCoreInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "BUY_FEE_BPS"
+      | "FREE_ATTACK_DELTA8"
       | "KAPPA"
       | "LAMBDA"
       | "PRICE_MIN"
@@ -37,25 +47,32 @@ export interface FlagWarsCoreInterface extends Interface {
       | "acceptOwnership"
       | "antiDumpTiers"
       | "attack"
+      | "attackBatch"
       | "buy"
       | "config"
       | "countries"
       | "countryTouched"
       | "createCountry"
+      | "depositCountryTokens"
       | "emergencyWithdraw"
+      | "getAntiDumpInfo"
       | "getBuyPrice"
       | "getConfig"
       | "getCountryInfo"
       | "getCurrentTier"
+      | "getFreeAttackCount"
       | "getRemainingSupply"
       | "getSellPrice"
       | "getUserBalance"
+      | "getUserCooldownInfo"
       | "getWarBalanceState"
+      | "getWarBalanceStateByTarget"
       | "nextCountryId"
       | "owner"
       | "pause"
       | "paused"
       | "pendingOwner"
+      | "pendingWithdrawals"
       | "previewAttackFee"
       | "remainingSupply"
       | "renounceOwnership"
@@ -63,12 +80,18 @@ export interface FlagWarsCoreInterface extends Interface {
       | "seedCountrySupply"
       | "sell"
       | "setConfig"
-      | "setInitialSupply"
+      | "setFees"
       | "transferOwnership"
       | "unpause"
+      | "userCooldownUntil"
+      | "userLastTier"
       | "userState"
+      | "wb1ByTarget"
       | "wb1Tier"
+      | "wb2ByTarget"
       | "wb2Tier"
+      | "withdraw"
+      | "withdrawFees"
   ): FunctionFragment;
 
   getEvent(
@@ -78,6 +101,8 @@ export interface FlagWarsCoreInterface extends Interface {
       | "Buy"
       | "ConfigUpdated"
       | "CountryCreated"
+      | "FeeDistributed"
+      | "FeeWithdrawn"
       | "FreeAttackUsed"
       | "OwnershipTransferStarted"
       | "OwnershipTransferred"
@@ -85,13 +110,17 @@ export interface FlagWarsCoreInterface extends Interface {
       | "PriceSeeded"
       | "Sell"
       | "SupplySeeded"
-      | "SupplySet"
+      | "TokensDeposited"
       | "Unpaused"
       | "WarBalanceApplied"
   ): EventFragment;
 
   encodeFunctionData(
     functionFragment: "BUY_FEE_BPS",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "FREE_ATTACK_DELTA8",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "KAPPA", values?: undefined): string;
@@ -123,7 +152,11 @@ export interface FlagWarsCoreInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "attack",
-    values: [BigNumberish, BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "attackBatch",
+    values: [FlagWarsCore.AttackItemStruct[]]
   ): string;
   encodeFunctionData(
     functionFragment: "buy",
@@ -143,8 +176,16 @@ export interface FlagWarsCoreInterface extends Interface {
     values: [BigNumberish, string, AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "depositCountryTokens",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "emergencyWithdraw",
     values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getAntiDumpInfo",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getBuyPrice",
@@ -160,6 +201,10 @@ export interface FlagWarsCoreInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "getFreeAttackCount",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getRemainingSupply",
     values: [BigNumberish]
   ): string;
@@ -172,8 +217,16 @@ export interface FlagWarsCoreInterface extends Interface {
     values: [BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getUserCooldownInfo",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getWarBalanceState",
     values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getWarBalanceStateByTarget",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "nextCountryId",
@@ -185,6 +238,10 @@ export interface FlagWarsCoreInterface extends Interface {
   encodeFunctionData(
     functionFragment: "pendingOwner",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "pendingWithdrawals",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "previewAttackFee",
@@ -215,7 +272,7 @@ export interface FlagWarsCoreInterface extends Interface {
     values: [AddressLike, AddressLike, AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "setInitialSupply",
+    functionFragment: "setFees",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -224,14 +281,42 @@ export interface FlagWarsCoreInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "userCooldownUntil",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "userLastTier",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "userState",
     values: [AddressLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "wb1ByTarget",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "wb1Tier", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "wb2ByTarget",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "wb2Tier", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "withdraw",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawFees",
+    values?: undefined
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "BUY_FEE_BPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "FREE_ATTACK_DELTA8",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "KAPPA", data: BytesLike): Result;
@@ -262,6 +347,10 @@ export interface FlagWarsCoreInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "attack", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "attackBatch",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "buy", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "config", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "countries", data: BytesLike): Result;
@@ -274,7 +363,15 @@ export interface FlagWarsCoreInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "depositCountryTokens",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "emergencyWithdraw",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getAntiDumpInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -291,6 +388,10 @@ export interface FlagWarsCoreInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getFreeAttackCount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getRemainingSupply",
     data: BytesLike
   ): Result;
@@ -303,7 +404,15 @@ export interface FlagWarsCoreInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getUserCooldownInfo",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getWarBalanceState",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getWarBalanceStateByTarget",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -315,6 +424,10 @@ export interface FlagWarsCoreInterface extends Interface {
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "pendingOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "pendingWithdrawals",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -339,18 +452,36 @@ export interface FlagWarsCoreInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "sell", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setConfig", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "setInitialSupply",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "setFees", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "userCooldownUntil",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "userLastTier",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "userState", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "wb1ByTarget",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "wb1Tier", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "wb2ByTarget",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "wb2Tier", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawFees",
+    data: BytesLike
+  ): Result;
 }
 
 export namespace AntiDumpAppliedEvent {
@@ -467,6 +598,37 @@ export namespace CountryCreatedEvent {
     countryId: bigint;
     name: string;
     token: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace FeeDistributedEvent {
+  export type InputTuple = [
+    kind: BytesLike,
+    amount: BigNumberish,
+    to: AddressLike
+  ];
+  export type OutputTuple = [kind: string, amount: bigint, to: string];
+  export interface OutputObject {
+    kind: string;
+    amount: bigint;
+    to: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace FeeWithdrawnEvent {
+  export type InputTuple = [to: AddressLike, amount: BigNumberish];
+  export type OutputTuple = [to: string, amount: bigint];
+  export interface OutputObject {
+    to: string;
+    amount: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -597,12 +759,12 @@ export namespace SupplySeededEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace SupplySetEvent {
-  export type InputTuple = [countryId: BigNumberish, supply18: BigNumberish];
-  export type OutputTuple = [countryId: bigint, supply18: bigint];
+export namespace TokensDepositedEvent {
+  export type InputTuple = [countryId: BigNumberish, amount: BigNumberish];
+  export type OutputTuple = [countryId: bigint, amount: bigint];
   export interface OutputObject {
     countryId: bigint;
-    supply18: bigint;
+    amount: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -685,6 +847,8 @@ export interface FlagWarsCore extends BaseContract {
 
   BUY_FEE_BPS: TypedContractMethod<[], [bigint], "view">;
 
+  FREE_ATTACK_DELTA8: TypedContractMethod<[], [bigint], "view">;
+
   KAPPA: TypedContractMethod<[], [bigint], "view">;
 
   LAMBDA: TypedContractMethod<[], [bigint], "view">;
@@ -714,7 +878,13 @@ export interface FlagWarsCore extends BaseContract {
   >;
 
   attack: TypedContractMethod<
-    [fromId: BigNumberish, toId: BigNumberish, amountToken18: BigNumberish],
+    [fromId: BigNumberish, toId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  attackBatch: TypedContractMethod<
+    [items: FlagWarsCore.AttackItemStruct[]],
     [void],
     "nonpayable"
   >;
@@ -768,10 +938,31 @@ export interface FlagWarsCore extends BaseContract {
     "nonpayable"
   >;
 
+  depositCountryTokens: TypedContractMethod<
+    [countryId: BigNumberish, amount: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   emergencyWithdraw: TypedContractMethod<
     [token: AddressLike, amount: BigNumberish],
     [void],
     "nonpayable"
+  >;
+
+  getAntiDumpInfo: TypedContractMethod<
+    [countryId: BigNumberish, amountToken18: BigNumberish],
+    [
+      [bigint, bigint, bigint, bigint, bigint, boolean] & {
+        sellAmount: bigint;
+        sellPercentage: bigint;
+        extraFeeBps: bigint;
+        cooldown: bigint;
+        nextSellTime: bigint;
+        canSellNow: boolean;
+      }
+    ],
+    "view"
   >;
 
   getBuyPrice: TypedContractMethod<
@@ -865,9 +1056,21 @@ export interface FlagWarsCore extends BaseContract {
     [countryId: BigNumberish],
     [
       [bigint, bigint, bigint] & {
-        maxPrice: bigint;
-        delta: bigint;
-        attackFee: bigint;
+        maxPrice8: bigint;
+        delta8: bigint;
+        attackFeeUSDC6_orETHwei: bigint;
+      }
+    ],
+    "view"
+  >;
+
+  getFreeAttackCount: TypedContractMethod<
+    [user: AddressLike],
+    [
+      [bigint, bigint, bigint] & {
+        used: bigint;
+        maxCount: bigint;
+        remaining: bigint;
       }
     ],
     "view"
@@ -884,6 +1087,18 @@ export interface FlagWarsCore extends BaseContract {
   getUserBalance: TypedContractMethod<
     [id: BigNumberish, user: AddressLike],
     [bigint],
+    "view"
+  >;
+
+  getUserCooldownInfo: TypedContractMethod<
+    [user: AddressLike, countryId: BigNumberish],
+    [
+      [boolean, bigint, bigint] & {
+        isInCooldown: boolean;
+        remainingSeconds: bigint;
+        lastTierApplied: bigint;
+      }
+    ],
     "view"
   >;
 
@@ -904,6 +1119,22 @@ export interface FlagWarsCore extends BaseContract {
     "view"
   >;
 
+  getWarBalanceStateByTarget: TypedContractMethod<
+    [countryId: BigNumberish],
+    [
+      [bigint, bigint, bigint, bigint, bigint, bigint, bigint] & {
+        wb1Count: bigint;
+        wb1Threshold: bigint;
+        wb1RemainSec: bigint;
+        wb2Count: bigint;
+        wb2Threshold: bigint;
+        wb2RemainSec: bigint;
+        currentDeltaMultiplierBps: bigint;
+      }
+    ],
+    "view"
+  >;
+
   nextCountryId: TypedContractMethod<[], [bigint], "view">;
 
   owner: TypedContractMethod<[], [string], "view">;
@@ -913,6 +1144,12 @@ export interface FlagWarsCore extends BaseContract {
   paused: TypedContractMethod<[], [boolean], "view">;
 
   pendingOwner: TypedContractMethod<[], [string], "view">;
+
+  pendingWithdrawals: TypedContractMethod<
+    [arg0: AddressLike],
+    [bigint],
+    "view"
+  >;
 
   previewAttackFee: TypedContractMethod<
     [user: AddressLike, attackerPrice8: BigNumberish],
@@ -966,8 +1203,8 @@ export interface FlagWarsCore extends BaseContract {
     "nonpayable"
   >;
 
-  setInitialSupply: TypedContractMethod<
-    [countryId: BigNumberish, supply18: BigNumberish],
+  setFees: TypedContractMethod<
+    [_entryFeeBps: BigNumberish, _sellFeeBps: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -980,18 +1217,23 @@ export interface FlagWarsCore extends BaseContract {
 
   unpause: TypedContractMethod<[], [void], "nonpayable">;
 
-  userState: TypedContractMethod<
-    [arg0: AddressLike],
-    [
-      [bigint, bigint, bigint, bigint, bigint, bigint] & {
-        cooldownUntil: bigint;
-        freeAttacksUsed: bigint;
-        wb1WindowStart: bigint;
-        wb2WindowStart: bigint;
-        wb1AttackCount: bigint;
-        wb2AttackCount: bigint;
-      }
-    ],
+  userCooldownUntil: TypedContractMethod<
+    [arg0: AddressLike, arg1: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
+  userLastTier: TypedContractMethod<
+    [arg0: AddressLike, arg1: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
+  userState: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+
+  wb1ByTarget: TypedContractMethod<
+    [arg0: BigNumberish],
+    [[bigint, bigint] & { windowStart: bigint; attackCount: bigint }],
     "view"
   >;
 
@@ -1007,6 +1249,12 @@ export interface FlagWarsCore extends BaseContract {
     "view"
   >;
 
+  wb2ByTarget: TypedContractMethod<
+    [arg0: BigNumberish],
+    [[bigint, bigint] & { windowStart: bigint; attackCount: bigint }],
+    "view"
+  >;
+
   wb2Tier: TypedContractMethod<
     [],
     [
@@ -1019,12 +1267,23 @@ export interface FlagWarsCore extends BaseContract {
     "view"
   >;
 
+  withdraw: TypedContractMethod<
+    [to: AddressLike, amount: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  withdrawFees: TypedContractMethod<[], [void], "nonpayable">;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
   getFunction(
     nameOrSignature: "BUY_FEE_BPS"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "FREE_ATTACK_DELTA8"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "KAPPA"
@@ -1066,7 +1325,14 @@ export interface FlagWarsCore extends BaseContract {
   getFunction(
     nameOrSignature: "attack"
   ): TypedContractMethod<
-    [fromId: BigNumberish, toId: BigNumberish, amountToken18: BigNumberish],
+    [fromId: BigNumberish, toId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "attackBatch"
+  ): TypedContractMethod<
+    [items: FlagWarsCore.AttackItemStruct[]],
     [void],
     "nonpayable"
   >;
@@ -1125,11 +1391,34 @@ export interface FlagWarsCore extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "depositCountryTokens"
+  ): TypedContractMethod<
+    [countryId: BigNumberish, amount: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "emergencyWithdraw"
   ): TypedContractMethod<
     [token: AddressLike, amount: BigNumberish],
     [void],
     "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "getAntiDumpInfo"
+  ): TypedContractMethod<
+    [countryId: BigNumberish, amountToken18: BigNumberish],
+    [
+      [bigint, bigint, bigint, bigint, bigint, boolean] & {
+        sellAmount: bigint;
+        sellPercentage: bigint;
+        extraFeeBps: bigint;
+        cooldown: bigint;
+        nextSellTime: bigint;
+        canSellNow: boolean;
+      }
+    ],
+    "view"
   >;
   getFunction(
     nameOrSignature: "getBuyPrice"
@@ -1227,9 +1516,22 @@ export interface FlagWarsCore extends BaseContract {
     [countryId: BigNumberish],
     [
       [bigint, bigint, bigint] & {
-        maxPrice: bigint;
-        delta: bigint;
-        attackFee: bigint;
+        maxPrice8: bigint;
+        delta8: bigint;
+        attackFeeUSDC6_orETHwei: bigint;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getFreeAttackCount"
+  ): TypedContractMethod<
+    [user: AddressLike],
+    [
+      [bigint, bigint, bigint] & {
+        used: bigint;
+        maxCount: bigint;
+        remaining: bigint;
       }
     ],
     "view"
@@ -1252,6 +1554,19 @@ export interface FlagWarsCore extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "getUserCooldownInfo"
+  ): TypedContractMethod<
+    [user: AddressLike, countryId: BigNumberish],
+    [
+      [boolean, bigint, bigint] & {
+        isInCooldown: boolean;
+        remainingSeconds: bigint;
+        lastTierApplied: bigint;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "getWarBalanceState"
   ): TypedContractMethod<
     [user: AddressLike],
@@ -1265,6 +1580,23 @@ export interface FlagWarsCore extends BaseContract {
         wb2RemainSec: bigint;
         freeAttacksUsed: bigint;
         freeAttacksMax: bigint;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getWarBalanceStateByTarget"
+  ): TypedContractMethod<
+    [countryId: BigNumberish],
+    [
+      [bigint, bigint, bigint, bigint, bigint, bigint, bigint] & {
+        wb1Count: bigint;
+        wb1Threshold: bigint;
+        wb1RemainSec: bigint;
+        wb2Count: bigint;
+        wb2Threshold: bigint;
+        wb2RemainSec: bigint;
+        currentDeltaMultiplierBps: bigint;
       }
     ],
     "view"
@@ -1284,6 +1616,9 @@ export interface FlagWarsCore extends BaseContract {
   getFunction(
     nameOrSignature: "pendingOwner"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "pendingWithdrawals"
+  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
   getFunction(
     nameOrSignature: "previewAttackFee"
   ): TypedContractMethod<
@@ -1344,9 +1679,9 @@ export interface FlagWarsCore extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "setInitialSupply"
+    nameOrSignature: "setFees"
   ): TypedContractMethod<
-    [countryId: BigNumberish, supply18: BigNumberish],
+    [_entryFeeBps: BigNumberish, _sellFeeBps: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -1357,19 +1692,27 @@ export interface FlagWarsCore extends BaseContract {
     nameOrSignature: "unpause"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "userState"
+    nameOrSignature: "userCooldownUntil"
   ): TypedContractMethod<
-    [arg0: AddressLike],
-    [
-      [bigint, bigint, bigint, bigint, bigint, bigint] & {
-        cooldownUntil: bigint;
-        freeAttacksUsed: bigint;
-        wb1WindowStart: bigint;
-        wb2WindowStart: bigint;
-        wb1AttackCount: bigint;
-        wb2AttackCount: bigint;
-      }
-    ],
+    [arg0: AddressLike, arg1: BigNumberish],
+    [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "userLastTier"
+  ): TypedContractMethod<
+    [arg0: AddressLike, arg1: BigNumberish],
+    [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "userState"
+  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "wb1ByTarget"
+  ): TypedContractMethod<
+    [arg0: BigNumberish],
+    [[bigint, bigint] & { windowStart: bigint; attackCount: bigint }],
     "view"
   >;
   getFunction(
@@ -1386,6 +1729,13 @@ export interface FlagWarsCore extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "wb2ByTarget"
+  ): TypedContractMethod<
+    [arg0: BigNumberish],
+    [[bigint, bigint] & { windowStart: bigint; attackCount: bigint }],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "wb2Tier"
   ): TypedContractMethod<
     [],
@@ -1398,6 +1748,16 @@ export interface FlagWarsCore extends BaseContract {
     ],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "withdraw"
+  ): TypedContractMethod<
+    [to: AddressLike, amount: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "withdrawFees"
+  ): TypedContractMethod<[], [void], "nonpayable">;
 
   getEvent(
     key: "AntiDumpApplied"
@@ -1433,6 +1793,20 @@ export interface FlagWarsCore extends BaseContract {
     CountryCreatedEvent.InputTuple,
     CountryCreatedEvent.OutputTuple,
     CountryCreatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "FeeDistributed"
+  ): TypedContractEvent<
+    FeeDistributedEvent.InputTuple,
+    FeeDistributedEvent.OutputTuple,
+    FeeDistributedEvent.OutputObject
+  >;
+  getEvent(
+    key: "FeeWithdrawn"
+  ): TypedContractEvent<
+    FeeWithdrawnEvent.InputTuple,
+    FeeWithdrawnEvent.OutputTuple,
+    FeeWithdrawnEvent.OutputObject
   >;
   getEvent(
     key: "FreeAttackUsed"
@@ -1484,11 +1858,11 @@ export interface FlagWarsCore extends BaseContract {
     SupplySeededEvent.OutputObject
   >;
   getEvent(
-    key: "SupplySet"
+    key: "TokensDeposited"
   ): TypedContractEvent<
-    SupplySetEvent.InputTuple,
-    SupplySetEvent.OutputTuple,
-    SupplySetEvent.OutputObject
+    TokensDepositedEvent.InputTuple,
+    TokensDepositedEvent.OutputTuple,
+    TokensDepositedEvent.OutputObject
   >;
   getEvent(
     key: "Unpaused"
@@ -1559,6 +1933,28 @@ export interface FlagWarsCore extends BaseContract {
       CountryCreatedEvent.InputTuple,
       CountryCreatedEvent.OutputTuple,
       CountryCreatedEvent.OutputObject
+    >;
+
+    "FeeDistributed(bytes32,uint256,address)": TypedContractEvent<
+      FeeDistributedEvent.InputTuple,
+      FeeDistributedEvent.OutputTuple,
+      FeeDistributedEvent.OutputObject
+    >;
+    FeeDistributed: TypedContractEvent<
+      FeeDistributedEvent.InputTuple,
+      FeeDistributedEvent.OutputTuple,
+      FeeDistributedEvent.OutputObject
+    >;
+
+    "FeeWithdrawn(address,uint256)": TypedContractEvent<
+      FeeWithdrawnEvent.InputTuple,
+      FeeWithdrawnEvent.OutputTuple,
+      FeeWithdrawnEvent.OutputObject
+    >;
+    FeeWithdrawn: TypedContractEvent<
+      FeeWithdrawnEvent.InputTuple,
+      FeeWithdrawnEvent.OutputTuple,
+      FeeWithdrawnEvent.OutputObject
     >;
 
     "FreeAttackUsed(address,uint256,uint256,uint8,uint256)": TypedContractEvent<
@@ -1638,15 +2034,15 @@ export interface FlagWarsCore extends BaseContract {
       SupplySeededEvent.OutputObject
     >;
 
-    "SupplySet(uint256,uint256)": TypedContractEvent<
-      SupplySetEvent.InputTuple,
-      SupplySetEvent.OutputTuple,
-      SupplySetEvent.OutputObject
+    "TokensDeposited(uint256,uint256)": TypedContractEvent<
+      TokensDepositedEvent.InputTuple,
+      TokensDepositedEvent.OutputTuple,
+      TokensDepositedEvent.OutputObject
     >;
-    SupplySet: TypedContractEvent<
-      SupplySetEvent.InputTuple,
-      SupplySetEvent.OutputTuple,
-      SupplySetEvent.OutputObject
+    TokensDeposited: TypedContractEvent<
+      TokensDepositedEvent.InputTuple,
+      TokensDepositedEvent.OutputTuple,
+      TokensDepositedEvent.OutputObject
     >;
 
     "Unpaused(address)": TypedContractEvent<

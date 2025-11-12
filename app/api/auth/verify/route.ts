@@ -10,6 +10,8 @@ import { ObjectId } from 'mongodb'
 import { setDebugHeader } from '@/lib/debugHeaders'
 import { rateLimit } from '@/lib/rl'
 import { toChecksumAddress } from '@/lib/validate'
+import { verifyMessage } from 'viem'
+import { baseSepolia } from 'viem/chains'
 
 const ALLOW_DEV_SIGNATURE = process.env.ALLOW_DEV_SIGNATURE === 'true'
 
@@ -34,11 +36,72 @@ export async function POST(req: NextRequest) {
 
     // SIWE doğrulaması
     if (process.env.NODE_ENV === 'production') {
-      // prod: SIWE zorunlu
+      // prod: SIWE zorunlu ve gerçek verify
       if (!signature || !message) {
         return NextResponse.json({ error: 'invalid signature' }, { status: 400 })
       }
-      // TODO: gerçek SIWE verify
+      
+      try {
+        // Parse SIWE message format
+        // Expected format:
+        // FlagWars Login
+        // Address: 0x...
+        // Nonce: ...
+        // URI: ...
+        // Chain: 84532
+        const lines = message.split('\n')
+        if (lines.length < 5) {
+          return NextResponse.json({ error: 'invalid message format' }, { status: 400 })
+        }
+        
+        // Extract values from message
+        const addressLine = lines.find(l => l.startsWith('Address:'))
+        const uriLine = lines.find(l => l.startsWith('URI:'))
+        const chainLine = lines.find(l => l.startsWith('Chain:'))
+        
+        if (!addressLine || !uriLine || !chainLine) {
+          return NextResponse.json({ error: 'invalid message format' }, { status: 400 })
+        }
+        
+        const messageAddress = addressLine.split(':')[1]?.trim()
+        const messageUri = uriLine.split(':')[1]?.trim()
+        const messageChainId = chainLine.split(':')[1]?.trim()
+        
+        // Validate domain matches request origin
+        const requestOrigin = req.headers.get('origin') || req.headers.get('host') || ''
+        if (messageUri && !requestOrigin.includes(new URL(messageUri).hostname)) {
+          console.warn(`[AUTH] Domain mismatch: message URI ${messageUri} vs request origin ${requestOrigin}`)
+          // In production, be strict about domain matching
+          if (process.env.NODE_ENV === 'production') {
+            return NextResponse.json({ error: 'domain mismatch' }, { status: 401 })
+          }
+        }
+        
+        // Validate chain ID matches Base Sepolia (84532)
+        if (messageChainId !== '84532') {
+          return NextResponse.json({ error: 'invalid chain id' }, { status: 401 })
+        }
+        
+        // Validate address matches wallet
+        if (messageAddress.toLowerCase() !== w.toLowerCase()) {
+          return NextResponse.json({ error: 'address mismatch' }, { status: 401 })
+        }
+        
+        // Verify signature using viem
+        const recoveredAddress = await verifyMessage({
+          address: w as `0x${string}`,
+          message,
+          signature: signature as `0x${string}`,
+        })
+        
+        // Check if recovered address matches wallet
+        if (recoveredAddress.toLowerCase() !== w.toLowerCase()) {
+          return NextResponse.json({ error: 'signature verification failed' }, { status: 401 })
+        }
+      } catch (error: any) {
+        console.error('[AUTH] SIWE verification error:', error)
+        return NextResponse.json({ error: 'signature verification failed' }, { status: 401 })
+      }
     } else {
       // dev: bypass sadece flag açık ve signature === 'dev' ise
       if (ALLOW_DEV_SIGNATURE && signature === 'dev') {
@@ -52,7 +115,22 @@ export async function POST(req: NextRequest) {
         if (!signature.startsWith('0x') || signature.length < 10) {
           return NextResponse.json({ error: 'invalid signature format' }, { status: 400 })
         }
-        // TODO: istersen burada da gerçek SIWE verify ekleyebilirsin
+        
+        // Dev'de de gerçek SIWE verify yap (ama daha toleranslı)
+        try {
+          const recoveredAddress = await verifyMessage({
+            address: w as `0x${string}`,
+            message,
+            signature: signature as `0x${string}`,
+          })
+          
+          if (recoveredAddress.toLowerCase() !== w.toLowerCase()) {
+            return NextResponse.json({ error: 'signature verification failed' }, { status: 401 })
+          }
+        } catch (error: any) {
+          console.error('[AUTH] SIWE verification error (dev):', error)
+          return NextResponse.json({ error: 'signature verification failed' }, { status: 401 })
+        }
       }
     }
 

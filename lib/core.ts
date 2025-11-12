@@ -2,7 +2,7 @@ import { createPublicClient, createWalletClient, http, custom, getContract, pars
 import { baseSepolia } from "viem/chains";
 import { env } from "@/lib/env";
 import { translateContractError } from "@/lib/error-handler";
-import FlagWarsCore from "@/artifacts/contracts/FlagWarsCore_Production.sol/FlagWarsCore_Production.json";
+import FlagWarsCore from "@/artifacts/contracts/FlagWarsCore_Static.sol/FlagWarsCore.json";
 
 // Types
 export interface CountryInfo {
@@ -233,29 +233,24 @@ export function createCoreWriter(walletClient: any) {
       }
     },
     
-    async attack({ fromCountryId, toCountryId, amount }: { 
+    async attack({ fromCountryId, toCountryId }: { 
       fromCountryId: number; 
       toCountryId: number; 
-      amount: string;
     }) {
       try {
-        const amountWei = parseUnits(amount, 18);
-        
-        console.log(`Attacking from country ${fromCountryId} to ${toCountryId} with ${amount} tokens`);
+        console.log(`Attacking from country ${fromCountryId} to ${toCountryId}`);
         
         // Get attack fee
-        const feeInfo = await coreRead.getCurrentTier(toCountryId);
+        const feeInfo = await coreRead.getCurrentTier(fromCountryId);
         const attackFee = feeInfo.attackFeeUSDC6_orETHwei;
         
-        console.log(`Attack fee: ${formatUnits(attackFee, 18)} ETH`);
+        console.log(`Attack fee: ${formatUnits(attackFee, 6)} USDC`);
         
-        // Simulate first (read doesn't support value, only write does)
-        await contract.read.attack([BigInt(fromCountryId), BigInt(toCountryId), amountWei]);
+        // Simulate first
+        await contract.read.attack([BigInt(fromCountryId), BigInt(toCountryId)]);
         
         // Send transaction
-        const hash = await contract.write.attack([BigInt(fromCountryId), BigInt(toCountryId), amountWei], {
-          value: attackFee
-        });
+        const hash = await contract.write.attack([BigInt(fromCountryId), BigInt(toCountryId)]);
         
         return { 
           hash,

@@ -33,8 +33,8 @@ export async function getDb() {
       serverSelectionTimeoutMS: 10_000,
       connectTimeoutMS: 10_000,
       socketTimeoutMS: 15_000,
-      maxPoolSize: 20, // Increased for worker concurrency
-      minPoolSize: 2,
+      maxPoolSize: process.env.NODE_ENV === 'production' ? 50 : 20, // Increased for production high traffic
+      minPoolSize: process.env.NODE_ENV === 'production' ? 5 : 2,
       maxIdleTimeMS: 60_000,
       retryReads: true,
       retryWrites: true,

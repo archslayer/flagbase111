@@ -1,8 +1,5 @@
 "use client"
 import { useEffect, useState } from "react"
-import { useReadContract } from "wagmi"
-import { CORE_ABI } from "./core-abi"
-import { CORE_ADDRESS } from "./addresses"
 
 type OwnedFlag = { 
   id: number

@@ -17,7 +17,8 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
     // Expected payload:
-    // { user, fromId, toId, amountToken18, txHash, blockNumber, feeUSDC6, timestamp }
+    // { user, fromId, toId, txHash, blockNumber, feeUSDC6, timestamp }
+    // Note: amountToken18 removed - attacks are now fixed single attacks
 
     const job = await q.add('attack', body, defaultJobOpts({
       jobId: body.txHash // Use txHash as idempotent key
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
       fromId: Number(body.fromId),
       toId: Number(body.toId),
       feeUSDC6: body.feeUSDC6 || '0',
-      amountToken18: body.amountToken18 || '0'
+      amountToken18: '0' // Fixed attacks - no amount parameter
     }).catch(e => console.error('[QUEUE/ATTACK] Analytics enqueue failed:', e))
     
     return NextResponse.json({ ok: true, jobId: job.id })

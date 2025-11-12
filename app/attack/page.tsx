@@ -1,21 +1,20 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useAccount, useChainId } from "wagmi"
-import { config } from "@/app/providers"
 import { ConnectAndLogin } from "@/components/ConnectAndLogin"
 import { useOwnedFlags } from "@/lib/useOwnedFlags"
 import { useToast } from "@/components/Toast"
 import { VictorySplash } from "@/components/VictorySplash"
-import { computeAttackTier, type AttackConfig } from "@/lib/attackTierCalc"
+import type { AttackConfig } from "@/lib/attackTierCalc"
 import { estimateAttackFee } from "@/lib/attack-flow"
 import { guardedWrite, guardedWaitSafe, guardedRead } from "@/lib/guarded-tx"
-import { requireBaseSepolia } from "@/lib/chain-guard"
 import { BASE_SEPOLIA_ID } from "@/lib/chains"
 import { CORE_ABI } from "@/lib/core-abi"
 import { formatEther, erc20Abi } from "viem"
 
-const CORE_ADDRESS = process.env.NEXT_PUBLIC_CORE_ADDRESS as `0x${string}`
-const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`
+// Safe environment variable access with fallbacks
+const CORE_ADDRESS = (process.env.NEXT_PUBLIC_CORE_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}`
+const USDC_ADDRESS = (process.env.NEXT_PUBLIC_USDC_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}`
 
 // USDC Allowance helper for attack fees
 async function ensureUsdcAllowance(minNeeded: bigint, owner: `0x${string}`, pushToast: any) {
@@ -261,8 +260,6 @@ export default function AttackPage() {
       const totalFee = fee * BigInt(multiplier)
       await ensureUsdcAllowance(totalFee, address!, push)
 
-      const amountToken18 = BigInt(1) * BigInt(1e18) // Always 1 token per attack
-
       // Single attack or batch attack - USDC fee handled by contract
       let txHash: `0x${string}`
 
@@ -270,8 +267,7 @@ export default function AttackPage() {
         // Use batch attack for 5x
         const items = Array(5).fill(null).map(() => ({
           fromId: BigInt(attackerFlag.id),
-          toId: BigInt(targetFlag.id),
-          amountToken18: amountToken18
+          toId: BigInt(targetFlag.id)
         }))
 
         // Validate all batch items
@@ -296,12 +292,12 @@ export default function AttackPage() {
           ttl: 3000 
         })
       } else {
-        // Single attack
+        // Single attack - no amount parameter
         txHash = await guardedWrite({
           address: CORE_ADDRESS,
           abi: CORE_ABI,
           functionName: 'attack',
-          args: [BigInt(attackerFlag.id), BigInt(targetFlag.id), amountToken18]
+          args: [BigInt(attackerFlag.id), BigInt(targetFlag.id)]
         })
 
         console.log('[ATTACK] Single txHash:', txHash)
@@ -353,7 +349,6 @@ export default function AttackPage() {
             user: address,
             fromId: attackerFlag.id,
             toId: targetFlag.id,
-            amountToken18: amountToken18.toString(),
             txHash,
             blockNumber: receipt.blockNumber?.toString() ?? '0',
             feeUSDC6: fee ? (fee * BigInt(multiplier)).toString() : '0',
@@ -447,6 +442,39 @@ export default function AttackPage() {
   // Show nothing while checking auth (prevents flicker)
   if (isLoggedIn === null) {
     return null
+  }
+
+  // Guard: Check environment variables
+  if (!process.env.NEXT_PUBLIC_CORE_ADDRESS || !process.env.NEXT_PUBLIC_USDC_ADDRESS) {
+    return (
+      <div style={{
+        position: 'relative',
+        minHeight: '100vh',
+        backgroundImage: 'url(/attackbg.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(10px)',
+          padding: '2rem',
+          borderRadius: '1rem',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          textAlign: 'center',
+          maxWidth: '400px',
+          color: 'white'
+        }}>
+          <h1 style={{color: 'white', marginBottom: '1rem'}}>⚔️ Attack</h1>
+          <p style={{color: 'rgba(255, 255, 255, 0.8)'}}>
+            Configuration error: Missing environment variables. Please check your setup.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   if (!isConnected || !isLoggedIn) {

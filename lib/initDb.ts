@@ -26,6 +26,13 @@ export async function ensureIndexes() {
 
   // free attacks
   await db.collection('free_attacks').createIndex({ wallet: 1 }, { unique: true, name: 'uniq_wallet_free_attacks' })
+  await db.collection('free_attacks').createIndex({ wallet: 1, used: 1 }, { name: 'wallet_used' })
+
+  // quest_claims - additional index for faster lookups
+  await db.collection('quest_claims').createIndex({ wallet: 1, claimedAt: -1 }, { name: 'wallet_claimedAt_desc' })
+
+  // price_snapshots - for time-series queries
+  await db.collection('price_snapshots').createIndex({ ts: -1 }, { name: 'ts_desc' })
 
   // idempotency
   await db.collection('idempotency').createIndex({ key: 1 }, { unique: true, name: 'uniq_key' })

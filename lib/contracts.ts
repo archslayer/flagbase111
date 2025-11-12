@@ -2,7 +2,7 @@ import { createPublicClient, http, parseUnits, formatUnits, createWalletClient, 
 import { baseSepolia } from "viem/chains";
 import { env } from "@/lib/env";
 import { translateContractError } from "@/lib/error-handler";
-import FlagWarsCore from "@/artifacts/contracts/FlagWarsCore_Production.sol/FlagWarsCore_Production.json";
+import FlagWarsCore from "@/artifacts/contracts/FlagWarsCore_Static.sol/FlagWarsCore.json";
 import { CORE_ABI } from "@/lib/core-abi";
 
 // Types for contract interactions
@@ -86,55 +86,21 @@ const coreContract = getContract({
 export const contractReader = {
   async getCountryInfo(countryId: number): Promise<CountryInfo> {
     try {
-      // First try new Core.sol format (countries mapping) using CORE_ABI
-      try {
-        const result = await publicClient.readContract({
-          address: env.CORE as `0x${string}`,
-          abi: CORE_ABI,
-          functionName: 'countries',
-          args: [BigInt(countryId)]
-        }) as readonly [string, `0x${string}`, boolean, bigint, number, number, bigint];
-        
-        const [name, token, exists, price8, kappa8, lambda8, priceMin8] = result;
-        
-        // Get balance from token contract for totalSupply
-        let totalSupply = 0n;
-        try {
-          const erc20Abi = parseAbi(['function totalSupply() view returns (uint256)']);
-          totalSupply = await publicClient.readContract({
-            address: token,
-            abi: erc20Abi,
-            functionName: 'totalSupply',
-            args: []
-          }) as bigint;
-        } catch {}
-        
-        return {
-          id: countryId,
-          name,
-          token,
-          price: price8.toString(),
-          attacks: "0", // New Core doesn't track attacks
-          totalSupply: totalSupply.toString(),
-          exists,
-        };
-      } catch (newCoreError) {
-        // Fallback to old Core.sol format (getCountryInfo)
-        const result = await coreContract.read.getCountryInfo([BigInt(countryId)]);
-        const [name, token, price, totalSupply, attacks, exists] = result as [
-          string, string, bigint, bigint, bigint, boolean
-        ];
-        
-        return {
-          id: countryId,
-          name,
-          token,
-          price: price.toString(),
-          attacks: attacks.toString(),
-          totalSupply: totalSupply.toString(),
-          exists,
-        };
-      }
+      // Use getCountryInfo view function (more reliable than mapping getter)
+      const result = await coreContract.read.getCountryInfo([BigInt(countryId)]);
+      const [name, token, price, totalSupply, attacks, exists] = result as [
+        string, string, bigint, bigint, bigint, boolean
+      ];
+      
+      return {
+        id: countryId,
+        name,
+        token,
+        price: price.toString(),
+        attacks: attacks.toString(),
+        totalSupply: totalSupply.toString(),
+        exists,
+      };
     } catch (error) {
       console.error('Error getting country info:', error);
       // Return mock data if contract call fails
@@ -191,11 +157,13 @@ export const contractReader = {
 
   async getCurrentTier(countryId: number): Promise<TierInfo> {
     try {
-      // Mock tier info - replace with actual contract call
+      // Use real contract call from core.ts
+      const { coreRead } = require('./core')
+      const tier = await coreRead.getCurrentTier(countryId)
       return {
-        maxPrice: "1000000000000000000000", // 1000 ETH
-        delta: "10000000000000000000", // 10 ETH
-        attackFee: "1000000000000000000" // 1 ETH
+        maxPrice: tier.maxPrice8.toString(),
+        delta: tier.delta8.toString(),
+        attackFee: tier.attackFeeUSDC6_orETHwei.toString()
       };
     } catch (error) {
       console.error('Error getting current tier:', error);
@@ -205,26 +173,46 @@ export const contractReader = {
 
   async getConfig(): Promise<GameConfig> {
     try {
-      // Mock config - replace with actual contract call
+      // Use real contract call - getConfig is implemented in contract
+      const result = await coreContract.read.getConfig() as readonly [
+        string, string, string, string, string, number, number, number, number, bigint, bigint, bigint, boolean,
+        bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, number, number, number, number,
+        bigint, bigint, bigint, bigint
+      ];
+      
+      const [
+        payToken, feeToken, treasury, revenue, commissions,
+        buyFeeBps, sellFeeBps, referralShareBps, revenueShareBps,
+        priceMin8, kappa, lambda, attackFeeInUSDC,
+        tier1Price8, tier2Price8, tier3Price8,
+        delta1_8, delta2_8, delta3_8, delta4_8,
+        fee1_USDC6, fee2_USDC6, fee3_USDC6, fee4_USDC6,
+        fee1_TOKEN18, fee2_TOKEN18, fee3_TOKEN18, fee4_TOKEN18
+      ] = result;
+      
+      // Get war-balance tiers from contract (using default values for now)
+      // These are stored in contract state but not exposed via getConfig
+      // We'll use spec defaults: WB1 = 5 attacks/300s, WB2 = 20 attacks/1800s
+      
       return {
-        payToken: env.USDC,
-        entryFee: "500", // 5%
-        sellFee: "300", // 3%
+        payToken,
+        entryFee: buyFeeBps.toString(),
+        sellFee: sellFeeBps.toString(),
         tiers: [
-          { maxPrice: "1000000000", delta: "10000000", attackFee: "100" },
-          { maxPrice: "10000000000", delta: "50000000", attackFee: "200" },
-          { maxPrice: "0", delta: "100000000", attackFee: "300" }
+          { maxPrice: "500000000", delta: "130000", attackFee: "300000" }, // Tier 1: ≤5 USDC
+          { maxPrice: "1000000000", delta: "110000", attackFee: "350000" }, // Tier 2: 5-10 USDC
+          { maxPrice: "0", delta: "90000", attackFee: "400000" } // Tier 3: >10 USDC
         ],
         antiDump: [
-          { pct: "1000", extraFee: "500", cooldown: "3600" },
-          { pct: "5000", extraFee: "1000", cooldown: "7200" }
+          { pct: "1000", extraFee: "500", cooldown: "60" }, // 10% -> 5% fee, 60s
+          { pct: "5000", extraFee: "1000", cooldown: "300" } // 50% -> 10% fee, 300s
         ],
         wb1Count: "5",
         wb1Window: "300",
-        wb1MulBps: "6000",
+        wb1MulBps: "6000", // 60% multiplier
         wb2Count: "20",
         wb2Window: "1800",
-        wb2MulBps: "8000"
+        wb2MulBps: "8000" // 80% multiplier
       };
     } catch (error) {
       console.error('Error getting config:', error);
@@ -234,14 +222,19 @@ export const contractReader = {
 
   async getAntiDumpInfo(countryId: number, amount: string): Promise<AntiDumpInfo> {
     try {
-      // Mock anti-dump info - replace with actual contract call
+      // Use real contract call - getAntiDumpInfo is now implemented in contract
+      const result = await coreContract.read.getAntiDumpInfo([
+        BigInt(countryId),
+        parseUnits(amount, 18)
+      ]);
+      
       return {
-        sellAmount: "0",
-        sellPercentage: "0",
-        extraFeeBps: "0",
-        cooldown: "0",
-        nextSellTime: "0",
-        canSellNow: true
+        sellAmount: result[0].toString(),
+        sellPercentage: result[1].toString(),
+        extraFeeBps: result[2].toString(),
+        cooldown: result[3].toString(),
+        nextSellTime: result[4].toString(),
+        canSellNow: result[5]
       };
     } catch (error) {
       console.error('Error getting anti-dump info:', error);
@@ -251,11 +244,16 @@ export const contractReader = {
 
   async getUserCooldownInfo(address: string, countryId: number): Promise<{isInCooldown: boolean, remainingSeconds: number, lastTierApplied: number}> {
     try {
-      // Mock cooldown info - replace with actual contract call
+      // Use real contract call - getUserCooldownInfo is now implemented in contract
+      const result = await coreContract.read.getUserCooldownInfo([
+        address as `0x${string}`,
+        BigInt(countryId)
+      ]);
+      
       return {
-        isInCooldown: false,
-        remainingSeconds: 0,
-        lastTierApplied: 0
+        isInCooldown: result[0],
+        remainingSeconds: Number(result[1]),
+        lastTierApplied: Number(result[2])
       };
     } catch (error) {
       console.error('Error getting user cooldown info:', error);
@@ -263,14 +261,30 @@ export const contractReader = {
     }
   },
 
-  async getAchievements(address: string): Promise<any[]> {
+  async getFreeAttackCount(address: string): Promise<{used: number, max: number, remaining: number}> {
     try {
-      // Mock achievements - replace with actual contract call
-      return [];
+      // Use real contract call - getFreeAttackCount is now implemented in contract
+      const result = await coreContract.read.getFreeAttackCount([
+        address as `0x${string}`
+      ]);
+      
+      return {
+        used: Number(result[0]),
+        max: Number(result[1]),
+        remaining: Number(result[2])
+      };
     } catch (error) {
-      console.error('Error getting achievements:', error);
-      throw new Error('Failed to get achievements');
+      console.error('Error getting free attack count:', error);
+      throw new Error('Failed to get free attack count');
     }
+  },
+
+  async getAchievements(address: string): Promise<any[]> {
+    // Achievements are stored in MongoDB, not on-chain
+    // This function should only be called from server-side code
+    // Client-side code should use /api/achievements/my endpoint instead
+    console.warn('getAchievements called from client-side - use /api/achievements/my instead')
+    return []
   },
 
   async getUserBalance(userAddress: string, countryId: number): Promise<string> {
@@ -313,34 +327,44 @@ export const contractReader = {
 
   async getWarBalanceState(userAddress: string): Promise<WarBalanceInfo> {
     try {
-      // Use CORE_ABI instead of compiled ABI
-      const result = await publicClient.readContract({
-        address: env.CORE as `0x${string}`,
-        abi: CORE_ABI,
-        functionName: 'getWarBalanceState',
-        args: [userAddress as `0x${string}`]
-      }) as any;
+      // Use real contract call - getWarBalanceState returns 8 values
+      const result = await coreContract.read.getWarBalanceState([
+        userAddress as `0x${string}`
+      ]) as readonly [bigint, bigint, bigint, bigint, bigint, bigint, number, number];
+      
+      const [
+        wb1Count, wb1Threshold, wb1RemainSec,
+        wb2Count, wb2Threshold, wb2RemainSec,
+        freeAttacksUsed, freeAttacksMax
+      ] = result;
+      
+      // Calculate multipliers based on thresholds
+      // WB1 multiplier: 60% (6000 bps) if wb1Count >= wb1Threshold
+      // WB2 multiplier: 80% (8000 bps) if wb2Count >= wb2Threshold
+      const wb1Multiplier = wb1Count >= wb1Threshold ? BigInt(6000) : BigInt(0);
+      const wb2Multiplier = wb2Count >= wb2Threshold ? BigInt(8000) : BigInt(0);
+      const currentMultiplier = wb2Multiplier > BigInt(0) ? wb2Multiplier : wb1Multiplier;
       
       return {
-        wb1Count: result[0].toString(),
-        wb1Threshold: result[1].toString(),
-        wb1Window: result[2].toString(),
-        wb1Multiplier: result[3].toString(),
-        wb1MulBps: result[4].toString(),
-        wb2Count: result[5].toString(),
-        wb2Threshold: result[6].toString(),
-        wb2Window: result[7].toString(),
-        wb2Multiplier: result[8].toString(),
-        wb2MulBps: result[9].toString(),
-        currentMultiplier: result[10].toString()
+        wb1Count: wb1Count.toString(),
+        wb1Threshold: wb1Threshold.toString(),
+        wb1Window: wb1RemainSec.toString(),
+        wb1Multiplier: wb1Multiplier.toString(),
+        wb1MulBps: wb1Multiplier.toString(),
+        wb2Count: wb2Count.toString(),
+        wb2Threshold: wb2Threshold.toString(),
+        wb2Window: wb2RemainSec.toString(),
+        wb2Multiplier: wb2Multiplier.toString(),
+        wb2MulBps: wb2Multiplier.toString(),
+        currentMultiplier: currentMultiplier.toString()
       };
     } catch (error) {
-      // Function not yet implemented in contract - return defaults
-      throw error; // Rethrow to be handled by caller
+      console.error('Error getting war balance state:', error);
+      throw error;
     }
   },
 
-  async previewAttackFee(userAddress: string, targetPrice8: string): Promise<{
+  async previewAttackFee(userAddress: string, attackerPrice8: string): Promise<{
     baseFeeUSDC6: string;
     appliedTier: number;
     appliedMulBps: string;
@@ -348,13 +372,12 @@ export const contractReader = {
     isFreeAttackAvailable: boolean;
   }> {
     try {
-      // Use new Core.sol ABI
-      const result = await publicClient.readContract({
-        address: env.CORE as `0x${string}`,
-        abi: CORE_ABI,
-        functionName: 'previewAttackFee',
-        args: [userAddress as `0x${string}`, BigInt(targetPrice8)]
-      }) as readonly [bigint, bigint, bigint, bigint, boolean];
+      // Use real contract call - previewAttackFee uses attacker's country price
+      // Note: attackerPrice8 is the attacker's country price (8 decimals), not target
+      const result = await coreContract.read.previewAttackFee([
+        userAddress as `0x${string}`,
+        BigInt(attackerPrice8)
+      ]) as readonly [bigint, bigint, bigint, bigint, boolean];
       
       const [baseFeeUSDC6, appliedTierBig, appliedMulBps, finalFeeUSDC6, isFreeAttackAvailable] = result;
       const appliedTier = Number(appliedTierBig);
@@ -406,131 +429,9 @@ export function computeAttackFee(
 }
 
 export function createContractWriter(walletClient: any) {
-  const wallet = createWalletClient({
-    chain: baseSepolia,
-    transport: custom(walletClient),
-  });
-
-  const contract = getContract({
-    address: env.CORE as `0x${string}`,
-    abi: FlagWarsCore.abi,
-    client: wallet,
-  });
-
-  return {
-    publicClient,
-    
-    async buy({ countryId, amount, minOut, deadline }: { 
-      countryId: number; 
-      amount: string; 
-      minOut?: string;
-      deadline?: bigint;
-    }) {
-      try {
-        const amountWei = parseUnits(amount, 18);
-        const minOutWei = minOut ? parseUnits(minOut, 6) : BigInt(0);
-        const deadlineTime = deadline || BigInt(Math.floor(Date.now() / 1000) + 120); // 2 minutes default
-        
-        // Get buy price for validation
-        const buyPrice = await contractReader.getBuyPrice(countryId, amount);
-        const buyPriceWei = parseUnits(formatUnits(BigInt(buyPrice), 6), 6);
-        
-        console.log(`Buying ${amount} tokens for country ${countryId}`);
-        console.log(`Buy price: ${formatUnits(buyPriceWei, 6)} USDC`);
-        
-        // Simulate USDC approval if required
-        if (REQUIRE_USDC_APPROVAL) {
-          console.log("USDC approval required - simulating approval");
-          // In real implementation, check allowance and approve if needed
-        }
-        
-        // For now, return mock transaction
-        const txHash = `0x${Math.random().toString(16).substr(2, 40)}`;
-        console.log(`Buy transaction sent: ${txHash}`);
-        
-        return { hash: txHash };
-      } catch (error) {
-        console.error('Buy transaction error:', error);
-        throw new Error(translateContractError(error, 'en'));
-      }
-    },
-    
-    async sell({ countryId, amount, minOut, deadline }: { 
-      countryId: number; 
-      amount: string; 
-      minOut?: string;
-      deadline?: bigint;
-    }) {
-      try {
-        const amountWei = parseUnits(amount, 18);
-        const minOutWei = minOut ? parseUnits(minOut, 6) : BigInt(0);
-        const deadlineTime = deadline || BigInt(Math.floor(Date.now() / 1000) + 120); // 2 minutes default
-        
-        console.log(`Selling ${amount} tokens for country ${countryId}`);
-        
-        // For now, return mock transaction
-        const txHash = `0x${Math.random().toString(16).substr(2, 40)}`;
-        console.log(`Sell transaction sent: ${txHash}`);
-        
-        return { hash: txHash };
-      } catch (error) {
-        console.error('Sell transaction error:', error);
-        throw new Error(translateContractError(error, 'en'));
-      }
-    },
-    
-    async attack({ fromCountryId, toCountryId, amount }: { 
-      fromCountryId: number; 
-      toCountryId: number; 
-      amount: string;
-    }) {
-      try {
-        const amountWei = parseUnits(amount, 18);
-        
-        console.log(`Attacking from country ${fromCountryId} to ${toCountryId} with ${amount} tokens`);
-        
-        // Get attack fee estimation
-        const feeInfo = await contractReader.getCurrentTier(toCountryId);
-        const attackFee = BigInt(feeInfo.attackFee);
-        
-        console.log(`Attack fee: ${formatUnits(attackFee, 6)} USDC`);
-        
-        // For now, return mock transaction
-        const txHash = `0x${Math.random().toString(16).substr(2, 40)}`;
-        console.log(`Attack transaction sent: ${txHash}`);
-        
-        return { 
-          hash: txHash,
-          msgValue: attackFee.toString(),
-        };
-      } catch (error) {
-        console.error('Attack transaction error:', error);
-        throw new Error(translateContractError(error, 'en'));
-      }
-    },
-    
-    async claimReferralRewards() {
-      try {
-        console.log("Claiming referral rewards");
-        const txHash = `0x${Math.random().toString(16).substr(2, 40)}`;
-        return { hash: txHash };
-      } catch (error) {
-        console.error('Claim referral rewards error:', error);
-        throw new Error('Failed to claim referral rewards');
-      }
-    },
-    
-    async mintAchievement(id: number) {
-      try {
-        console.log(`Minting achievement ${id}`);
-        const txHash = `0x${Math.random().toString(16).substr(2, 40)}`;
-        return { hash: txHash };
-      } catch (error) {
-        console.error('Mint achievement error:', error);
-        throw new Error('Failed to mint achievement');
-      }
-    }
-  };
+  // Use createCoreWriter from lib/core.ts which has real contract calls
+  const { createCoreWriter } = require('./core')
+  return createCoreWriter(walletClient)
 }
 
 export const addresses = {

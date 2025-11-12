@@ -1,8 +1,6 @@
 {
-  "/page": "app/page.js",
-  "/quests/page": "app/quests/page.js",
-  "/api/free-attack/my/route": "app/api/free-attack/my/route.js",
-  "/api/countries/userBalance/route": "app/api/countries/userBalance/route.js",
+  "/api/config/attack/route": "app/api/config/attack/route.js",
   "/api/me/route": "app/api/me/route.js",
-  "/api/quests/my/route": "app/api/quests/my/route.js"
+  "/attack/page": "app/attack/page.js",
+  "/api/countries/userBalance/route": "app/api/countries/userBalance/route.js"
 }

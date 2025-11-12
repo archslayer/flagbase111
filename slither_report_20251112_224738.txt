@@ -1,0 +1,21 @@
+﻿python : usage: slither target [flag]
+At C:\dev\flagwars2\run-slither-safe.ps1:25 char:1
++ python -m slither . --hardhat 2>&1 | Out-File -FilePath $outputFile - ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (usage: slither target [flag]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+target can be:
+	- file.sol // a Solidity file
+	- project_directory // a project directory. See https://github.com/crytic/crytic-compile/#crytic-compile for the suppo
+rted platforms
+	- 0x.. // a contract on mainnet
+	- NETWORK:0x.. // a contract on a different network. Supported networks: mainne,sepoli,holesk,bs,testnet.bs,pol,amoy.p
+ol,polyz,cardona.polyz,bas,sepolia.bas,arb,nova.arb,sepolia.arb,line,sepolia.line,ft,testnet.ft,blas,sepolia.blas,opti,
+sepolia.opti,ava,testnet.ava,btt,testnet.btt,cel,alfajores.cel,crono,fra,holesky.fra,gn,krom,sepolia.krom,mantl,sepolia
+.mantl,moonbea,moonrive,moonbas,opbn,testnet.opbn,scrol,sepolia.scrol,taik,hekla.taik,wemi,testnet.wemi,era.zksyn,sepol
+iaera.zksyn,xa,sepolia.xa,xd,testnet.xd,apechai,curtis.apechai,worl,sepolia.worl,sopho,testnet.sopho,soni,testnet.soni,
+unichai,sepolia.unichai,abstrac,sepolia.abstrac,berachai
+__main__.py: error: ambiguous option: --hardhat could match --hardhat-ignore-compile, --hardhat-cache-directory, --hard
+hat-artifacts-directory

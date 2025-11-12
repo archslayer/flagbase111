@@ -1,7 +1,9 @@
 // Idempotency cleanup utilities
-import { NextRequest } from "next/server";
+import { getDb } from "@/lib/mongodb";
 
-// Mock cleanup functions - replace with real database operations
+const TTL_SEC = 24 * 60 * 60; // 24 hours
+const STUCK_THRESHOLD_SEC = 30 * 60; // 30 minutes - keys stuck in PENDING for too long
+
 export async function cleanupExpiredIdempotencyKeys(): Promise<{
   deleted: number;
   stuck: number;
@@ -18,26 +20,33 @@ export async function cleanupExpiredIdempotencyKeys(): Promise<{
   };
 
   try {
-    // Mock: Clean up expired keys
+    const db = await getDb();
+    const collection = db.collection('idempotency');
+    
     const now = Date.now();
-    const expiredKeys = [];
+    const expiredThreshold = now - (TTL_SEC * 1000);
+    const stuckThreshold = now - (STUCK_THRESHOLD_SEC * 1000);
     
-    // Simulate finding expired keys
-    for (let i = 0; i < 5; i++) {
-      expiredKeys.push(`expired_key_${i}`);
-    }
+    // Clean up expired keys (older than TTL)
+    const expiredResult = await collection.deleteMany({
+      ts: { $lt: expiredThreshold }
+    });
+    result.deleted = expiredResult.deletedCount;
     
-    result.deleted = expiredKeys.length;
-    
-    // Mock: Find stuck keys (pending for too long)
-    const stuckKeys = [];
-    for (let i = 0; i < 2; i++) {
-      stuckKeys.push(`stuck_key_${i}`);
-    }
-    
+    // Find stuck keys (PENDING status for too long)
+    const stuckKeys = await collection.find({
+      status: 'PENDING',
+      ts: { $lt: stuckThreshold }
+    }).toArray();
     result.stuck = stuckKeys.length;
     
-    console.log(`Idempotency cleanup: deleted ${result.deleted}, stuck ${result.stuck}`);
+    // Optionally clean up stuck keys (uncomment if needed)
+    // if (stuckKeys.length > 0) {
+    //   const stuckIds = stuckKeys.map(k => k.key);
+    //   await collection.deleteMany({ key: { $in: stuckIds } });
+    // }
+    
+    console.log(`Idempotency cleanup: deleted ${result.deleted} expired keys, found ${result.stuck} stuck keys`);
     
   } catch (error: any) {
     result.errors.push(error.message);
@@ -54,14 +63,39 @@ export async function getIndexStatistics(): Promise<{
   failedKeys: number;
   expiredKeys: number;
 }> {
-  // Mock statistics
-  return {
-    totalKeys: 150,
-    pendingKeys: 5,
-    succeededKeys: 120,
-    failedKeys: 15,
-    expiredKeys: 10
-  };
+  try {
+    const db = await getDb();
+    const collection = db.collection('idempotency');
+    
+    const now = Date.now();
+    const expiredThreshold = now - (TTL_SEC * 1000);
+    
+    const [totalKeys, pendingKeys, succeededKeys, failedKeys, expiredKeys] = await Promise.all([
+      collection.countDocuments({}),
+      collection.countDocuments({ status: 'PENDING' }),
+      collection.countDocuments({ status: 'SUCCEEDED' }),
+      collection.countDocuments({ status: 'FAILED' }),
+      collection.countDocuments({ ts: { $lt: expiredThreshold } })
+    ]);
+    
+    return {
+      totalKeys,
+      pendingKeys,
+      succeededKeys,
+      failedKeys,
+      expiredKeys
+    };
+  } catch (error: any) {
+    console.error('Idempotency statistics error:', error);
+    // Return zeros on error to avoid breaking admin UI
+    return {
+      totalKeys: 0,
+      pendingKeys: 0,
+      succeededKeys: 0,
+      failedKeys: 0,
+      expiredKeys: 0
+    };
+  }
 }
 
 export async function forceCleanupStuckKeys(): Promise<{
@@ -77,8 +111,19 @@ export async function forceCleanupStuckKeys(): Promise<{
   };
 
   try {
-    // Mock: Force cleanup stuck keys
-    result.cleaned = 2;
+    const db = await getDb();
+    const collection = db.collection('idempotency');
+    
+    const now = Date.now();
+    const stuckThreshold = now - (STUCK_THRESHOLD_SEC * 1000);
+    
+    // Force cleanup stuck keys (PENDING status for too long)
+    const deleteResult = await collection.deleteMany({
+      status: 'PENDING',
+      ts: { $lt: stuckThreshold }
+    });
+    
+    result.cleaned = deleteResult.deletedCount;
     console.log(`Force cleanup: cleaned ${result.cleaned} stuck keys`);
   } catch (error: any) {
     result.errors.push(error.message);

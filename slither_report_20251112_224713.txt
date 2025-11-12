@@ -1,0 +1,60 @@
+﻿python : 'solc --version' running
+At C:\dev\flagwars2\run-slither-safe.ps1:19 char:1
++ python -m slither $mainContract --hardhat-ignore-compile 2>&1 | Out-F ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ('solc --version' running:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Traceback (most recent call last):
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\crytic_compile\platform\solc.py", line 380, in ge
+t_version
+    with subprocess.Popen(
+         ^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "C:\Python312\Lib\subprocess.py", line 1538, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] Sistem belirtilen dosyay² bulam²yor
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\slither\__main__.py", line 989, in <module>
+    main()
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\slither\__main__.py", line 776, in main
+    main_impl(all_detector_classes=detectors, all_printer_classes=printers)
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\slither\__main__.py", line 882, in main_impl
+    ) = process_all(filename, args, detector_classes, printer_classes)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\slither\__main__.py", line 96, in process_all
+    compilations = compile_all(target, **vars(args))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\crytic_compile\crytic_compile.py", line 722, in c
+ompile_all
+    compilations.append(CryticCompile(target, **kwargs))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\crytic_compile\crytic_compile.py", line 211, in _
+_init__
+    self._compile(**kwargs)
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\crytic_compile\crytic_compile.py", line 633, in _
+compile
+    self._platform.compile(self, **kwargs)
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\crytic_compile\platform\solc.py", line 150, in co
+mpile
+    targets_json = _get_targets_json(compilation_unit, self._target, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\crytic_compile\platform\solc.py", line 279, in _g
+et_targets_json
+    return _run_solc(
+           ^^^^^^^^^^
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\crytic_compile\platform\solc.py", line 496, in _r
+un_solc
+    compiler="solc", version=get_version(solc, env), optimized=is_optimized(solc_arguments)
+                             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\altug\AppData\Roaming\Python\Python312\site-packages\crytic_compile\platform\solc.py", line 400, in ge
+t_version
+    raise InvalidCompilation(error)
+crytic_compile.platform.exceptions.InvalidCompilation: [WinError 2] Sistem belirtilen dosyay² bulam²yor

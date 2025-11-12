@@ -106,14 +106,14 @@ function QuestsPageContent() {
   const [mounted, setMounted] = useState(false)
   const [oauthError, setOauthError] = useState<string | null>(null)
   
-  // Free Attack Stats (Mock data - will be replaced with real API later)
+  // Free Attack Stats - loaded from API via useEffect
   const [freeAttackStats, setFreeAttackStats] = useState<FreeAttackStatsState>({
     remaining: 0,
     totalLimit: 2,
     used: 0,
     delta: 0.0005,
     awarded: 0,
-    loaded: false,
+    loaded: false, // Will be set to true after API call
   })
   
   // Attack Modal State

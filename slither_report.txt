@@ -1,0 +1,1871 @@
+﻿python : Problem deserializing hardhat configuration, using defaults: Expecting value: line 1 column 2 (char 1)
+At C:\dev\flagwars2\run-slither-safe.ps1:25 char:1
++ python -m slither . --hardhat-ignore-compile 2>&1 | Out-File -FilePat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Problem deseria...lumn 2 (char 1):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+INFO:Detectors:
+Core.pullUSDCFrom(address,uint256,address) (contracts/Core.sol#326-329) uses arbitrary from in transferFrom: require(bo
+ol,string)(IERC20(USDC).transferFrom(from,to,amount),Core: pull failed) (contracts/Core.sol#328)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#arbitrary-from-in-transferfrom
+INFO:Detectors:
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-134) has bitwise-xor 
+operator ^ instead of the exponentiation operator **: 
+	 - inverse = (3 * denominator) ^ 2 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#116)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-exponentiation
+INFO:Detectors:
+Reentrancy in FlagWarsCore_Production.attack(uint256,uint256,uint256) (contracts/FlagWarsCore_Production.sol#441-480):
+	External calls:
+	- _chargeFee(msg.sender,feeAmt,isUSDC) (contracts/FlagWarsCore_Production.sol#462)
+		- returndata = address(token).functionCall(data,SafeERC20: low-level call failed) (node_modules/@openzeppelin/contrac
+ts/token/ERC20/utils/SafeERC20.sol#122)
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+		- IERC20(cfg.payToken).safeTransferFrom(payer,cfg.revenue,amt) (contracts/FlagWarsCore_Production.sol#400)
+		- IERC20(cfg.feeToken).safeTransferFrom(payer,cfg.revenue,amt) (contracts/FlagWarsCore_Production.sol#402)
+	External calls sending eth:
+	- _chargeFee(msg.sender,feeAmt,isUSDC) (contracts/FlagWarsCore_Production.sol#462)
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+	State variables written after the call(s):
+	- attacker.price8 += delta8 (contracts/FlagWarsCore_Production.sol#465)
+	FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92) can be used in cross function reentrancie
+s:
+	- FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92)
+	- FlagWarsCore_Production.createCountry(uint256,string,address,uint256,uint256) (contracts/FlagWarsCore_Production.sol
+#159-171)
+	- FlagWarsCore_Production.getCountryInfo(uint256) (contracts/FlagWarsCore_Production.sol#174-177)
+	- target.price8 -= delta8 (contracts/FlagWarsCore_Production.sol#469)
+	FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92) can be used in cross function reentrancie
+s:
+	- FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92)
+	- FlagWarsCore_Production.createCountry(uint256,string,address,uint256,uint256) (contracts/FlagWarsCore_Production.sol
+#159-171)
+	- FlagWarsCore_Production.getCountryInfo(uint256) (contracts/FlagWarsCore_Production.sol#174-177)
+	- target.price8 = cfg.priceMin8 (contracts/FlagWarsCore_Production.sol#471)
+	FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92) can be used in cross function reentrancie
+s:
+	- FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92)
+	- FlagWarsCore_Production.createCountry(uint256,string,address,uint256,uint256) (contracts/FlagWarsCore_Production.sol
+#159-171)
+	- FlagWarsCore_Production.getCountryInfo(uint256) (contracts/FlagWarsCore_Production.sol#174-177)
+	- attacker.attacks += 1 (contracts/FlagWarsCore_Production.sol#475)
+	FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92) can be used in cross function reentrancie
+s:
+	- FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92)
+	- FlagWarsCore_Production.createCountry(uint256,string,address,uint256,uint256) (contracts/FlagWarsCore_Production.sol
+#159-171)
+	- FlagWarsCore_Production.getCountryInfo(uint256) (contracts/FlagWarsCore_Production.sol#174-177)
+	- target.attacks += 1 (contracts/FlagWarsCore_Production.sol#476)
+	FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92) can be used in cross function reentrancie
+s:
+	- FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92)
+	- FlagWarsCore_Production.createCountry(uint256,string,address,uint256,uint256) (contracts/FlagWarsCore_Production.sol
+#159-171)
+	- FlagWarsCore_Production.getCountryInfo(uint256) (contracts/FlagWarsCore_Production.sol#174-177)
+Reentrancy in FlagWarsCore_v1_5_4.attack(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#332-357):
+	External calls:
+	- _collectUSDC(msg.sender,feeUSDC6) (contracts/FlagWarsCore_v1_5_4.sol#344)
+		- returndata = address(token).functionCall(data,SafeERC20: low-level call failed) (node_modules/@openzeppelin/contrac
+ts/token/ERC20/utils/SafeERC20.sol#122)
+		- IERC20(config.payToken).safeTransferFrom(user,address(this),amountUSDC6) (contracts/FlagWarsCore_v1_5_4.sol#394)
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+	External calls sending eth:
+	- _collectUSDC(msg.sender,feeUSDC6) (contracts/FlagWarsCore_v1_5_4.sol#344)
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+	State variables written after the call(s):
+	- a.price = aAfter (contracts/FlagWarsCore_v1_5_4.sol#350)
+	FlagWarsCore_v1_5_4.countries (contracts/FlagWarsCore_v1_5_4.sol#55) can be used in cross function reentrancies:
+	- FlagWarsCore_v1_5_4.countries (contracts/FlagWarsCore_v1_5_4.sol#55)
+	- FlagWarsCore_v1_5_4.createCountry(string,address) (contracts/FlagWarsCore_v1_5_4.sol#218-232)
+	- FlagWarsCore_v1_5_4.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#293-299)
+	- FlagWarsCore_v1_5_4.getCountryInfo(uint256) (contracts/FlagWarsCore_v1_5_4.sol#265-274)
+	- FlagWarsCore_v1_5_4.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#304-312)
+	- FlagWarsCore_v1_5_4.listCountries() (contracts/FlagWarsCore_v1_5_4.sol#427-445)
+	- FlagWarsCore_v1_5_4.seedCountryPrice(uint256,uint64) (contracts/FlagWarsCore_v1_5_4.sol#237-250)
+	- t.price = tAfter (contracts/FlagWarsCore_v1_5_4.sol#351)
+	FlagWarsCore_v1_5_4.countries (contracts/FlagWarsCore_v1_5_4.sol#55) can be used in cross function reentrancies:
+	- FlagWarsCore_v1_5_4.countries (contracts/FlagWarsCore_v1_5_4.sol#55)
+	- FlagWarsCore_v1_5_4.createCountry(string,address) (contracts/FlagWarsCore_v1_5_4.sol#218-232)
+	- FlagWarsCore_v1_5_4.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#293-299)
+	- FlagWarsCore_v1_5_4.getCountryInfo(uint256) (contracts/FlagWarsCore_v1_5_4.sol#265-274)
+	- FlagWarsCore_v1_5_4.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#304-312)
+	- FlagWarsCore_v1_5_4.listCountries() (contracts/FlagWarsCore_v1_5_4.sol#427-445)
+	- FlagWarsCore_v1_5_4.seedCountryPrice(uint256,uint64) (contracts/FlagWarsCore_v1_5_4.sol#237-250)
+	- a.attacks ++ (contracts/FlagWarsCore_v1_5_4.sol#354)
+	FlagWarsCore_v1_5_4.countries (contracts/FlagWarsCore_v1_5_4.sol#55) can be used in cross function reentrancies:
+	- FlagWarsCore_v1_5_4.countries (contracts/FlagWarsCore_v1_5_4.sol#55)
+	- FlagWarsCore_v1_5_4.createCountry(string,address) (contracts/FlagWarsCore_v1_5_4.sol#218-232)
+	- FlagWarsCore_v1_5_4.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#293-299)
+	- FlagWarsCore_v1_5_4.getCountryInfo(uint256) (contracts/FlagWarsCore_v1_5_4.sol#265-274)
+	- FlagWarsCore_v1_5_4.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#304-312)
+	- FlagWarsCore_v1_5_4.listCountries() (contracts/FlagWarsCore_v1_5_4.sol#427-445)
+	- FlagWarsCore_v1_5_4.seedCountryPrice(uint256,uint64) (contracts/FlagWarsCore_v1_5_4.sol#237-250)
+Reentrancy in FlagWarsCore_Production.attackBatch(AttackItem[]) (contracts/FlagWarsCore_Production.sol#483-571):
+	External calls:
+	- _chargeFee(msg.sender,totalFee,isUSDC) (contracts/FlagWarsCore_Production.sol#542)
+		- returndata = address(token).functionCall(data,SafeERC20: low-level call failed) (node_modules/@openzeppelin/contrac
+ts/token/ERC20/utils/SafeERC20.sol#122)
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+		- IERC20(cfg.payToken).safeTransferFrom(payer,cfg.revenue,amt) (contracts/FlagWarsCore_Production.sol#400)
+		- IERC20(cfg.feeToken).safeTransferFrom(payer,cfg.revenue,amt) (contracts/FlagWarsCore_Production.sol#402)
+	External calls sending eth:
+	- _chargeFee(msg.sender,totalFee,isUSDC) (contracts/FlagWarsCore_Production.sol#542)
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+	State variables written after the call(s):
+	- A_scope_4.price8 += d_scope_5 (contracts/FlagWarsCore_Production.sol#556)
+	FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92) can be used in cross function reentrancie
+s:
+	- FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92)
+	- FlagWarsCore_Production.createCountry(uint256,string,address,uint256,uint256) (contracts/FlagWarsCore_Production.sol
+#159-171)
+	- FlagWarsCore_Production.getCountryInfo(uint256) (contracts/FlagWarsCore_Production.sol#174-177)
+	- B.price8 -= d_scope_5 (contracts/FlagWarsCore_Production.sol#559)
+	FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92) can be used in cross function reentrancie
+s:
+	- FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92)
+	- FlagWarsCore_Production.createCountry(uint256,string,address,uint256,uint256) (contracts/FlagWarsCore_Production.sol
+#159-171)
+	- FlagWarsCore_Production.getCountryInfo(uint256) (contracts/FlagWarsCore_Production.sol#174-177)
+	- B.price8 = cfg.priceMin8 (contracts/FlagWarsCore_Production.sol#561)
+	FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92) can be used in cross function reentrancie
+s:
+	- FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92)
+	- FlagWarsCore_Production.createCountry(uint256,string,address,uint256,uint256) (contracts/FlagWarsCore_Production.sol
+#159-171)
+	- FlagWarsCore_Production.getCountryInfo(uint256) (contracts/FlagWarsCore_Production.sol#174-177)
+	- A_scope_4.attacks += 1 (contracts/FlagWarsCore_Production.sol#565)
+	FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92) can be used in cross function reentrancie
+s:
+	- FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92)
+	- FlagWarsCore_Production.createCountry(uint256,string,address,uint256,uint256) (contracts/FlagWarsCore_Production.sol
+#159-171)
+	- FlagWarsCore_Production.getCountryInfo(uint256) (contracts/FlagWarsCore_Production.sol#174-177)
+	- B.attacks += 1 (contracts/FlagWarsCore_Production.sol#566)
+	FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92) can be used in cross function reentrancie
+s:
+	- FlagWarsCore_Production.countries (contracts/FlagWarsCore_Production.sol#92)
+	- FlagWarsCore_Production.createCountry(uint256,string,address,uint256,uint256) (contracts/FlagWarsCore_Production.sol
+#159-171)
+	- FlagWarsCore_Production.getCountryInfo(uint256) (contracts/FlagWarsCore_Production.sol#174-177)
+Reentrancy in FlagWarsCore.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#168-214):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),totalCostUSDC6) (contracts/FlagWarsCore_Static.sol
+#197-198)
+	- _splitFees(totalCostUSDC6) (contracts/FlagWarsCore_Static.sol#200-201)
+		- returndata = address(token).functionCall(data,SafeERC20: low-level call failed) (node_modules/@openzeppelin/contrac
+ts/token/ERC20/utils/SafeERC20.sol#122)
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+		- IERC20(config.payToken).safeTransfer(config.commissions,referralFee) (contracts/FlagWarsCore_Static.sol#438-440)
+		- IERC20(config.payToken).safeTransfer(config.revenue,revenueFee) (contracts/FlagWarsCore_Static.sol#442-445)
+	External calls sending eth:
+	- _splitFees(totalCostUSDC6) (contracts/FlagWarsCore_Static.sol#200-201)
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+	State variables written after the call(s):
+	- c.price = max(PRICE_MIN,c.price + (KAPPA * amountToken18) / 1e18) (contracts/FlagWarsCore_Static.sol#204-206)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#751-769)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#714-727)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#704-713)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1118-1123)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#893-899)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1128-1136)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#774-791)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833)
+	- c.totalSupply -= amountToken18 (contracts/FlagWarsCore_Static.sol#206)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#751-769)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#714-727)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#704-713)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1118-1123)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#893-899)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1128-1136)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#774-791)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities
+INFO:Detectors:
+Core.buy(uint256,uint256,uint256,uint256) (contracts/Core.sol#141-175) ignores return value by IERC20(USDC).transferFro
+m(msg.sender,address(this),netUSDC6) (contracts/Core.sol#161)
+Core.buy(uint256,uint256,uint256,uint256) (contracts/Core.sol#141-175) ignores return value by IERC20(c.token).transfer
+(msg.sender,amount18) (contracts/Core.sol#168)
+Core.sell(uint256,uint256,uint256,uint256) (contracts/Core.sol#217-248) ignores return value by IERC20(c.token).transfe
+rFrom(msg.sender,address(this),amount18) (contracts/Core.sol#236)
+Core.sell(uint256,uint256,uint256,uint256) (contracts/Core.sol#217-248) ignores return value by IERC20(USDC).transfer(m
+sg.sender,netUSDC6) (contracts/Core.sol#239)
+Core.sellWithPermit(uint256,uint256,uint256,uint256,uint256,uint8,bytes32,bytes32) (contracts/Core.sol#261-308) ignores
+ return value by IERC20(c.token).transferFrom(msg.sender,address(this),amount18) (contracts/Core.sol#296)
+Core.sellWithPermit(uint256,uint256,uint256,uint256,uint256,uint8,bytes32,bytes32) (contracts/Core.sol#261-308) ignores
+ return value by IERC20(USDC).transfer(msg.sender,netUSDC6) (contracts/Core.sol#299)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unchecked-transfer
+INFO:Detectors:
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-134) performs a multi
+plication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#101)
+	- inverse = (3 * denominator) ^ 2 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#116)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-134) performs a multi
+plication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#120)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-134) performs a multi
+plication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#121)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-134) performs a multi
+plication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#122)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-134) performs a multi
+plication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#123)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-134) performs a multi
+plication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#124)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-134) performs a multi
+plication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#125)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-134) performs a multi
+plication on the result of a division:
+	- prod0 = prod0 / twos (node_modules/@openzeppelin/contracts/utils/math/Math.sol#104)
+	- result = prod0 * inverse (node_modules/@openzeppelin/contracts/utils/math/Math.sol#131)
+Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121) performs a multiplication on the result of a division:
+	- n = amount18 / 1e18 (contracts/Core.sol#113)
+	- linearTerm = n * c.price8 (contracts/Core.sol#114)
+Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121) performs a multiplication on the result of a division:
+	- n = amount18 / 1e18 (contracts/Core.sol#113)
+	- quadraticTerm = (c.kappa8 * n * (n - 1)) / 2 (contracts/Core.sol#115)
+Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121) performs a multiplication on the result of a division:
+	- gross = totalPrice8 / 100 (contracts/Core.sol#118)
+	- fee = (gross * buyFeeBps) / 10000 (contracts/Core.sol#119)
+Core.buy(uint256,uint256,uint256,uint256) (contracts/Core.sol#141-175) performs a multiplication on the result of a div
+ision:
+	- n = amount18 / 1e18 (contracts/Core.sol#171)
+	- c.price8 += c.kappa8 * n (contracts/Core.sol#172)
+Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197) performs a multiplication on the result of a division:
+	- n = amount18 / 1e18 (contracts/Core.sol#187)
+	- linearTerm = n * c.price8 (contracts/Core.sol#188)
+Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197) performs a multiplication on the result of a division:
+	- n = amount18 / 1e18 (contracts/Core.sol#187)
+	- quadraticTerm = (c.lambda8 * n * (n - 1)) / 2 (contracts/Core.sol#189)
+Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197) performs a multiplication on the result of a division:
+	- gross = totalPrice8 / 100 (contracts/Core.sol#194)
+	- fee = (gross * sellFeeBps) / 10000 (contracts/Core.sol#195)
+Core.sell(uint256,uint256,uint256,uint256) (contracts/Core.sol#217-248) performs a multiplication on the result of a di
+vision:
+	- n = amount18 / 1e18 (contracts/Core.sol#242)
+	- priceDecrement = c.lambda8 * n (contracts/Core.sol#243)
+Core.sellWithPermit(uint256,uint256,uint256,uint256,uint256,uint8,bytes32,bytes32) (contracts/Core.sol#261-308) perform
+s a multiplication on the result of a division:
+	- n = amount18 / 1e18 (contracts/Core.sol#302)
+	- priceDecrement = c.lambda8 * n (contracts/Core.sol#303)
+FlagWarsCore_Production.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Production.sol#294-370) performs 
+a multiplication on the result of a division:
+	- fee = (grossUSDC6 * cfg.sellFeeBps) / 10_000 (contracts/FlagWarsCore_Production.sol#317)
+	- referralShare = (fee * cfg.referralShareBps) / 10_000 (contracts/FlagWarsCore_Production.sol#346)
+FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#219-300) performs a multiplicatio
+n on the result of a division:
+	- grossProceedsUSDC6 = grossProceeds8 / 100 (contracts/FlagWarsCore_Static.sol#239-241)
+	- feeUSDC6 = (grossProceedsUSDC6 * config.sellFeeBps) / 10000 (contracts/FlagWarsCore_Static.sol#252-253)
+FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#219-300) performs a multiplicatio
+n on the result of a division:
+	- feeUSDC6 = (grossProceedsUSDC6 * config.sellFeeBps) / 10000 (contracts/FlagWarsCore_Static.sol#252-253)
+	- referralFee = (feeUSDC6 * REFERRAL_SHARE_BPS) / 10000 (contracts/FlagWarsCore_Static.sol#277-278)
+FlagWarsCore._splitFees(uint256) (contracts/FlagWarsCore_Static.sol#433-448) performs a multiplication on the result of
+ a division:
+	- totalFee = (grossUSDC6 * config.entryFeeBps) / 10000 (contracts/FlagWarsCore_Static.sol#434)
+	- referralFee = (totalFee * REFERRAL_SHARE_BPS) / 10000 (contracts/FlagWarsCore_Static.sol#435-436)
+FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745) performs a multiplication on the
+ result of a division:
+	- grossProceedsUSDC6 = grossProceeds8 / 100 (contracts/FlagWarsCore_Static.sol#741-742)
+	- feeUSDC6 = (grossProceedsUSDC6 * config.sellFeeBps) / 10000 (contracts/FlagWarsCore_Static.sol#743-744)
+FlagWarsCore_v1_5_6_WhiteFlag.getCurrentDay() (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#173-178) performs a multipli
+cation on the result of a division:
+	- day = (timestamp / 86400) * 86400 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#176)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+INFO:Detectors:
+FlagWarsCore.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#174-232) performs a multiplication
+ on the result of a division:
+	- totalCostUSDC6 = totalCost8 / 100 (contracts/FlagWarsCore_Static.sol#192)
+	- totalFee = (totalCostUSDC6 * config.entryFeeBps) / 10000 (contracts/FlagWarsCore_Static.sol#212)
+FlagWarsCore.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#174-232) performs a multiplication
+ on the result of a division:
+	- totalFee = (totalCostUSDC6 * config.entryFeeBps) / 10000 (contracts/FlagWarsCore_Static.sol#212)
+	- referralFee = (totalFee * REFERRAL_SHARE_BPS) / 10000 (contracts/FlagWarsCore_Static.sol#214)
+FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#242-319) performs a multiplicatio
+n on the result of a division:
+	- grossProceedsUSDC6 = grossProceeds8 / 100 (contracts/FlagWarsCore_Static.sol#263)
+	- feeUSDC6 = (grossProceedsUSDC6 * config.sellFeeBps) / 10000 (contracts/FlagWarsCore_Static.sol#270)
+FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#242-319) performs a multiplicatio
+n on the result of a division:
+	- feeUSDC6 = (grossProceedsUSDC6 * config.sellFeeBps) / 10000 (contracts/FlagWarsCore_Static.sol#270)
+	- referralFee = (feeUSDC6 * REFERRAL_SHARE_BPS) / 10000 (contracts/FlagWarsCore_Static.sol#296)
+FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818) performs a multiplication on the
+ result of a division:
+	- grossProceedsUSDC6 = grossProceeds8 / 100 (contracts/FlagWarsCore_Static.sol#813)
+	- feeUSDC6 = (grossProceedsUSDC6 * config.sellFeeBps) / 10000 (contracts/FlagWarsCore_Static.sol#816)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+INFO:Detectors:
+Reentrancy in Core.attack(uint256,uint256,uint256) (contracts/Core.sol#394-437):
+	External calls:
+	- require(bool,string)(IERC20(USDC).transferFrom(msg.sender,address(this),feeUSDC6),Core: fee transfer failed) (contra
+cts/Core.sol#413-416)
+	- require(bool,string)(IERC20(USDC).transfer(REVENUE,feeUSDC6),Core: revenue transfer failed) (contracts/Core.sol#417-
+420)
+	State variables written after the call(s):
+	- atk.price8 += atk.kappa8 * uint32(n) (contracts/Core.sol#429)
+	Core.countries (contracts/Core.sol#34) can be used in cross function reentrancies:
+	- Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121)
+	- Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197)
+	- Core.addCountry(uint256,string,address,uint256,uint32,uint32,uint256) (contracts/Core.sol#56-77)
+	- Core.countries (contracts/Core.sol#34)
+	- Core.mintCountryTokens(uint256,uint256) (contracts/Core.sol#83-93)
+	- Core.quoteBuy(uint256,uint256) (contracts/Core.sol#126-136)
+	- Core.quoteSell(uint256,uint256) (contracts/Core.sol#202-212)
+	- Core.remainingSupply(uint256) (contracts/Core.sol#98-101)
+	- tgt.price8 = tgt.priceMin8 (contracts/Core.sol#434)
+	Core.countries (contracts/Core.sol#34) can be used in cross function reentrancies:
+	- Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121)
+	- Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197)
+	- Core.addCountry(uint256,string,address,uint256,uint32,uint32,uint256) (contracts/Core.sol#56-77)
+	- Core.countries (contracts/Core.sol#34)
+	- Core.mintCountryTokens(uint256,uint256) (contracts/Core.sol#83-93)
+	- Core.quoteBuy(uint256,uint256) (contracts/Core.sol#126-136)
+	- Core.quoteSell(uint256,uint256) (contracts/Core.sol#202-212)
+	- Core.remainingSupply(uint256) (contracts/Core.sol#98-101)
+	- tgt.price8 = newPrice (contracts/Core.sol#434)
+	Core.countries (contracts/Core.sol#34) can be used in cross function reentrancies:
+	- Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121)
+	- Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197)
+	- Core.addCountry(uint256,string,address,uint256,uint32,uint32,uint256) (contracts/Core.sol#56-77)
+	- Core.countries (contracts/Core.sol#34)
+	- Core.mintCountryTokens(uint256,uint256) (contracts/Core.sol#83-93)
+	- Core.quoteBuy(uint256,uint256) (contracts/Core.sol#126-136)
+	- Core.quoteSell(uint256,uint256) (contracts/Core.sol#202-212)
+	- Core.remainingSupply(uint256) (contracts/Core.sol#98-101)
+Reentrancy in FlagWarsCore.attack(uint256,uint256) (contracts/FlagWarsCore_Static.sol#309-359):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),feeUSDC6) (contracts/FlagWarsCore_Static.sol#346-3
+47)
+	- IERC20(config.payToken).safeTransfer(config.revenue,feeUSDC6) (contracts/FlagWarsCore_Static.sol#349-350)
+	State variables written after the call(s):
+	- fromCountry.price = max(PRICE_MIN,fromCountry.price + deltaPrice8) (contracts/FlagWarsCore_Static.sol#354)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#751-769)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#714-727)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#704-713)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1118-1123)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#893-899)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1128-1136)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#774-791)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833)
+	- toCountry.price = max(PRICE_MIN,toCountry.price - deltaPrice8) (contracts/FlagWarsCore_Static.sol#355-356)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#751-769)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#714-727)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#704-713)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1118-1123)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#893-899)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1128-1136)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#774-791)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833)
+	- fromCountry.attacks ++ (contracts/FlagWarsCore_Static.sol#356)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#751-769)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#714-727)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#704-713)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1118-1123)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#893-899)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1128-1136)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#774-791)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833)
+	- toCountry.attacks ++ (contracts/FlagWarsCore_Static.sol#356)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#751-769)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#714-727)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#704-713)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1118-1123)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#893-899)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1128-1136)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#774-791)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833)
+Reentrancy in FlagWarsCore_v1_5_5_AntiDump.attack(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#366-407)
+:
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),attackFee) (contracts/FlagWarsCore_v1_5_5_AntiDump
+.sol#389)
+	State variables written after the call(s):
+	- a.price = max(PRICE_MIN,a.price - delta) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#392)
+	FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68) can be used in cross function r
+eentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#413-417)
+	- FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68)
+	- FlagWarsCore_v1_5_5_AntiDump.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#266-297)
+	- FlagWarsCore_v1_5_5_AntiDump.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#331-337)
+	- FlagWarsCore_v1_5_5_AntiDump.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#342-360)
+	- t.price = max(PRICE_MIN,t.price - delta) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#393)
+	FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68) can be used in cross function r
+eentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#413-417)
+	- FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68)
+	- FlagWarsCore_v1_5_5_AntiDump.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#266-297)
+	- FlagWarsCore_v1_5_5_AntiDump.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#331-337)
+	- FlagWarsCore_v1_5_5_AntiDump.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#342-360)
+	- a.attacks ++ (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#396)
+	FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68) can be used in cross function r
+eentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#413-417)
+	- FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68)
+	- FlagWarsCore_v1_5_5_AntiDump.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#266-297)
+	- FlagWarsCore_v1_5_5_AntiDump.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#331-337)
+	- FlagWarsCore_v1_5_5_AntiDump.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#342-360)
+	- t.attacks ++ (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#397)
+	FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68) can be used in cross function r
+eentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#413-417)
+	- FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68)
+	- FlagWarsCore_v1_5_5_AntiDump.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#266-297)
+	- FlagWarsCore_v1_5_5_AntiDump.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#331-337)
+	- FlagWarsCore_v1_5_5_AntiDump.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#342-360)
+Reentrancy in FlagWarsCore_v1_5_6_WhiteFlag.attack(uint256,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#435-47
+9):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),attackFee) (contracts/FlagWarsCore_v1_5_6_WhiteFla
+g.sol#461)
+	State variables written after the call(s):
+	- a.price = max(PRICE_MIN,a.price - delta) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#464)
+	FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94) can be used in cross function
+ reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#485-48
+9)
+	- FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94)
+	- FlagWarsCore_v1_5_6_WhiteFlag.isCountryWhiteFlagHalted(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#183-190
+)
+	- FlagWarsCore_v1_5_6_WhiteFlag.resumeCountry(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#539-547)
+	- t.price = max(PRICE_MIN,t.price - delta) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#465)
+	FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94) can be used in cross function
+ reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#485-48
+9)
+	- FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94)
+	- FlagWarsCore_v1_5_6_WhiteFlag.isCountryWhiteFlagHalted(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#183-190
+)
+	- FlagWarsCore_v1_5_6_WhiteFlag.resumeCountry(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#539-547)
+	- a.attacks ++ (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#468)
+	FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94) can be used in cross function
+ reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#485-48
+9)
+	- FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94)
+	- FlagWarsCore_v1_5_6_WhiteFlag.isCountryWhiteFlagHalted(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#183-190
+)
+	- FlagWarsCore_v1_5_6_WhiteFlag.resumeCountry(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#539-547)
+	- t.attacks ++ (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#469)
+	FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94) can be used in cross function
+ reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#485-48
+9)
+	- FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94)
+	- FlagWarsCore_v1_5_6_WhiteFlag.isCountryWhiteFlagHalted(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#183-190
+)
+	- FlagWarsCore_v1_5_6_WhiteFlag.resumeCountry(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#539-547)
+Reentrancy in Core.buy(uint256,uint256,uint256,uint256) (contracts/Core.sol#141-175):
+	External calls:
+	- IERC20(USDC).transferFrom(msg.sender,address(this),netUSDC6) (contracts/Core.sol#161)
+	- IERC20(c.token).transfer(msg.sender,amount18) (contracts/Core.sol#168)
+	State variables written after the call(s):
+	- c.price8 += c.kappa8 * n (contracts/Core.sol#172)
+	Core.countries (contracts/Core.sol#34) can be used in cross function reentrancies:
+	- Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121)
+	- Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197)
+	- Core.addCountry(uint256,string,address,uint256,uint32,uint32,uint256) (contracts/Core.sol#56-77)
+	- Core.countries (contracts/Core.sol#34)
+	- Core.mintCountryTokens(uint256,uint256) (contracts/Core.sol#83-93)
+	- Core.quoteBuy(uint256,uint256) (contracts/Core.sol#126-136)
+	- Core.quoteSell(uint256,uint256) (contracts/Core.sol#202-212)
+	- Core.remainingSupply(uint256) (contracts/Core.sol#98-101)
+Reentrancy in FlagWarsCore_v1_5_4.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#119-159):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),usdcAmount) (contracts/FlagWarsCore_v1_5_4.sol#139
+)
+	State variables written after the call(s):
+	- c.price = max(PRICE_MIN,c.price + (KAPPA_TICKS * amount)) (contracts/FlagWarsCore_v1_5_4.sol#142)
+	FlagWarsCore_v1_5_4.countries (contracts/FlagWarsCore_v1_5_4.sol#55) can be used in cross function reentrancies:
+	- FlagWarsCore_v1_5_4.countries (contracts/FlagWarsCore_v1_5_4.sol#55)
+	- FlagWarsCore_v1_5_4.createCountry(string,address) (contracts/FlagWarsCore_v1_5_4.sol#218-232)
+	- FlagWarsCore_v1_5_4.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#293-299)
+	- FlagWarsCore_v1_5_4.getCountryInfo(uint256) (contracts/FlagWarsCore_v1_5_4.sol#265-274)
+	- FlagWarsCore_v1_5_4.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#304-312)
+	- FlagWarsCore_v1_5_4.listCountries() (contracts/FlagWarsCore_v1_5_4.sol#427-445)
+	- FlagWarsCore_v1_5_4.seedCountryPrice(uint256,uint64) (contracts/FlagWarsCore_v1_5_4.sol#237-250)
+	- remainingSupply[countryId] -= uint32(amount) (contracts/FlagWarsCore_v1_5_4.sol#145)
+	FlagWarsCore_v1_5_4.remainingSupply (contracts/FlagWarsCore_v1_5_4.sol#57) can be used in cross function reentrancies:
+	- FlagWarsCore_v1_5_4.createCountry(string,address) (contracts/FlagWarsCore_v1_5_4.sol#218-232)
+	- FlagWarsCore_v1_5_4.getRemainingSupply(uint256) (contracts/FlagWarsCore_v1_5_4.sol#286-288)
+	- FlagWarsCore_v1_5_4.initRemaining(uint256) (contracts/FlagWarsCore_v1_5_4.sol#255-259)
+	- FlagWarsCore_v1_5_4.remainingSupply (contracts/FlagWarsCore_v1_5_4.sol#57)
+Reentrancy in FlagWarsCore_v1_5_5_AntiDump.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump
+.sol#124-163):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),usdcAmount) (contracts/FlagWarsCore_v1_5_5_AntiDum
+p.sol#145)
+	State variables written after the call(s):
+	- c.price = max(PRICE_MIN,c.price + (KAPPA_TICKS * amount)) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#148)
+	FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68) can be used in cross function r
+eentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#413-417)
+	- FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68)
+	- FlagWarsCore_v1_5_5_AntiDump.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#266-297)
+	- FlagWarsCore_v1_5_5_AntiDump.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#331-337)
+	- FlagWarsCore_v1_5_5_AntiDump.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#342-360)
+	- remainingSupply[countryId] -= uint32(amount) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#151)
+	FlagWarsCore_v1_5_5_AntiDump.remainingSupply (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#70) can be used in cross func
+tion reentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#413-417)
+	- FlagWarsCore_v1_5_5_AntiDump.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#266-297)
+	- FlagWarsCore_v1_5_5_AntiDump.remainingSupply (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#70)
+Reentrancy in FlagWarsCore_v1_5_6_WhiteFlag.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFl
+ag.sol#282-327):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),usdcAmount) (contracts/FlagWarsCore_v1_5_6_WhiteFl
+ag.sol#306)
+	State variables written after the call(s):
+	- c.price = max(PRICE_MIN,c.price + (KAPPA_TICKS * amount)) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#309)
+	FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94) can be used in cross function
+ reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#485-48
+9)
+	- FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94)
+	- FlagWarsCore_v1_5_6_WhiteFlag.isCountryWhiteFlagHalted(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#183-190
+)
+	- FlagWarsCore_v1_5_6_WhiteFlag.resumeCountry(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#539-547)
+	- updateCountryDayData(countryId,amount,false) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#317)
+		- countries[countryId].isWhiteFlagHalted = false (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#254)
+		- countries[countryId].whiteFlagHaltedAt = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#255)
+		- countries[countryId].isWhiteFlagHalted = true (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#271)
+		- countries[countryId].whiteFlagHaltedAt = block.timestamp (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#272)
+	FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94) can be used in cross function
+ reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#485-48
+9)
+	- FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94)
+	- FlagWarsCore_v1_5_6_WhiteFlag.isCountryWhiteFlagHalted(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#183-190
+)
+	- FlagWarsCore_v1_5_6_WhiteFlag.resumeCountry(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#539-547)
+	- remainingSupply[countryId] -= uint32(amount) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#312)
+	FlagWarsCore_v1_5_6_WhiteFlag.remainingSupply (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#96) can be used in cross fu
+nction reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#485-48
+9)
+	- FlagWarsCore_v1_5_6_WhiteFlag.remainingSupply (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#96)
+Reentrancy in FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808):
+	External calls:
+	- IERC20(c.token).safeTransferFrom(msg.sender,address(this),amount) (contracts/FlagWarsCore_Static.sol#802-804)
+	State variables written after the call(s):
+	- c.totalSupply += amount (contracts/FlagWarsCore_Static.sol#804)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#751-769)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#714-727)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#704-713)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1118-1123)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#893-899)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1128-1136)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#774-791)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833)
+Reentrancy in AchievementsSBT.mint(AchievementsSBT.MintAuth,bytes) (contracts/AchievementsSBT.sol#170-229):
+	External calls:
+	- IERC20(payToken).safeTransferFrom(msg.sender,revenue,PRICE_USDC6) (contracts/AchievementsSBT.sol#210)
+	- _safeMint(msg.sender,tokenId) (contracts/AchievementsSBT.sol#214)
+		- retval = IERC721Receiver(to).onERC721Received(_msgSender(),from,tokenId,data) (node_modules/@openzeppelin/contracts
+/token/ERC721/ERC721.sol#406-417)
+	State variables written after the call(s):
+	- minted[msg.sender][auth.category][auth.level] = true (contracts/AchievementsSBT.sol#217)
+	AchievementsSBT.minted (contracts/AchievementsSBT.sol#49) can be used in cross function reentrancies:
+	- AchievementsSBT.minted (contracts/AchievementsSBT.sol#49)
+	- AchievementsSBT.mintedOf(address,uint256,uint256) (contracts/AchievementsSBT.sol#235-237)
+Reentrancy in FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833):
+	External calls:
+	- IERC20(c.token).safeTransferFrom(msg.sender,address(this),initialSupplyToken18) (contracts/FlagWarsCore_Static.sol#8
+24-826)
+	State variables written after the call(s):
+	- c.totalSupply = initialSupplyToken18 (contracts/FlagWarsCore_Static.sol#828)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#751-769)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#714-727)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#704-713)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1118-1123)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#893-899)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1128-1136)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#774-791)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833)
+Reentrancy in Core.sell(uint256,uint256,uint256,uint256) (contracts/Core.sol#217-248):
+	External calls:
+	- IERC20(c.token).transferFrom(msg.sender,address(this),amount18) (contracts/Core.sol#236)
+	- IERC20(USDC).transfer(msg.sender,netUSDC6) (contracts/Core.sol#239)
+	State variables written after the call(s):
+	- c.price8 = c.priceMin8 (contracts/Core.sol#245)
+	Core.countries (contracts/Core.sol#34) can be used in cross function reentrancies:
+	- Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121)
+	- Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197)
+	- Core.addCountry(uint256,string,address,uint256,uint32,uint32,uint256) (contracts/Core.sol#56-77)
+	- Core.countries (contracts/Core.sol#34)
+	- Core.mintCountryTokens(uint256,uint256) (contracts/Core.sol#83-93)
+	- Core.quoteBuy(uint256,uint256) (contracts/Core.sol#126-136)
+	- Core.quoteSell(uint256,uint256) (contracts/Core.sol#202-212)
+	- Core.remainingSupply(uint256) (contracts/Core.sol#98-101)
+	- c.price8 = newPrice (contracts/Core.sol#245)
+	Core.countries (contracts/Core.sol#34) can be used in cross function reentrancies:
+	- Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121)
+	- Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197)
+	- Core.addCountry(uint256,string,address,uint256,uint32,uint32,uint256) (contracts/Core.sol#56-77)
+	- Core.countries (contracts/Core.sol#34)
+	- Core.mintCountryTokens(uint256,uint256) (contracts/Core.sol#83-93)
+	- Core.quoteBuy(uint256,uint256) (contracts/Core.sol#126-136)
+	- Core.quoteSell(uint256,uint256) (contracts/Core.sol#202-212)
+	- Core.remainingSupply(uint256) (contracts/Core.sol#98-101)
+Reentrancy in FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#219-300):
+	External calls:
+	- IERC20(c.token).safeTransferFrom(msg.sender,address(this),amountToken18) (contracts/FlagWarsCore_Static.sol#268-270)
+	State variables written after the call(s):
+	- c.price = max(PRICE_MIN,c.price - (LAMBDA * amountToken18) / 1e18) (contracts/FlagWarsCore_Static.sol#270-271)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#751-769)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#714-727)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#704-713)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1118-1123)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#893-899)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1128-1136)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#774-791)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833)
+	- c.totalSupply += amountToken18 (contracts/FlagWarsCore_Static.sol#271)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#95-96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#751-769)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#800-808)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#714-727)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#704-713)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1118-1123)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#728-745)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#893-899)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1128-1136)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#774-791)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833)
+Reentrancy in FlagWarsCore_v1_5_4.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#167-212):
+	External calls:
+	- IERC20(config.payToken).safeTransfer(msg.sender,usdcProceeds) (contracts/FlagWarsCore_v1_5_4.sol#191)
+	State variables written after the call(s):
+	- c.price = max(PRICE_MIN,c.price - (LAMBDA_TICKS * amount)) (contracts/FlagWarsCore_v1_5_4.sol#194)
+	FlagWarsCore_v1_5_4.countries (contracts/FlagWarsCore_v1_5_4.sol#55) can be used in cross function reentrancies:
+	- FlagWarsCore_v1_5_4.countries (contracts/FlagWarsCore_v1_5_4.sol#55)
+	- FlagWarsCore_v1_5_4.createCountry(string,address) (contracts/FlagWarsCore_v1_5_4.sol#218-232)
+	- FlagWarsCore_v1_5_4.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#293-299)
+	- FlagWarsCore_v1_5_4.getCountryInfo(uint256) (contracts/FlagWarsCore_v1_5_4.sol#265-274)
+	- FlagWarsCore_v1_5_4.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#304-312)
+	- FlagWarsCore_v1_5_4.listCountries() (contracts/FlagWarsCore_v1_5_4.sol#427-445)
+	- FlagWarsCore_v1_5_4.seedCountryPrice(uint256,uint64) (contracts/FlagWarsCore_v1_5_4.sol#237-250)
+	- userBalances[msg.sender][countryId] -= uint32(amount) (contracts/FlagWarsCore_v1_5_4.sol#197)
+	FlagWarsCore_v1_5_4.userBalances (contracts/FlagWarsCore_v1_5_4.sol#56) can be used in cross function reentrancies:
+	- FlagWarsCore_v1_5_4.getUserBalance(address,uint256) (contracts/FlagWarsCore_v1_5_4.sol#279-281)
+	- FlagWarsCore_v1_5_4.userBalances (contracts/FlagWarsCore_v1_5_4.sol#56)
+Reentrancy in FlagWarsCore_v1_5_5_AntiDump.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDum
+p.sol#169-254):
+	External calls:
+	- IERC20(config.payToken).safeTransfer(msg.sender,usdcProceeds) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#228)
+	State variables written after the call(s):
+	- cooldown.lastSellTime = block.timestamp (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#239)
+	FlagWarsCore_v1_5_5_AntiDump.cooldowns (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#74) can be used in cross function r
+eentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.cooldowns (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#74)
+	- FlagWarsCore_v1_5_5_AntiDump.getUserCooldownInfo(address,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#308-32
+5)
+	- cooldown.cooldownEndTime = block.timestamp + cooldownSeconds (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#240)
+	FlagWarsCore_v1_5_5_AntiDump.cooldowns (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#74) can be used in cross function r
+eentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.cooldowns (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#74)
+	- FlagWarsCore_v1_5_5_AntiDump.getUserCooldownInfo(address,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#308-32
+5)
+	- cooldown.tierApplied = tierApplied (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#241)
+	FlagWarsCore_v1_5_5_AntiDump.cooldowns (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#74) can be used in cross function r
+eentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.cooldowns (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#74)
+	- FlagWarsCore_v1_5_5_AntiDump.getUserCooldownInfo(address,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#308-32
+5)
+	- c.price = max(PRICE_MIN,c.price - (LAMBDA_TICKS * amount)) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#231)
+	FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68) can be used in cross function r
+eentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#413-417)
+	- FlagWarsCore_v1_5_5_AntiDump.countries (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#68)
+	- FlagWarsCore_v1_5_5_AntiDump.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#266-297)
+	- FlagWarsCore_v1_5_5_AntiDump.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#331-337)
+	- FlagWarsCore_v1_5_5_AntiDump.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#342-360)
+	- remainingSupply[countryId] += uint32(amount) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#235)
+	FlagWarsCore_v1_5_5_AntiDump.remainingSupply (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#70) can be used in cross func
+tion reentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#413-417)
+	- FlagWarsCore_v1_5_5_AntiDump.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#266-297)
+	- FlagWarsCore_v1_5_5_AntiDump.remainingSupply (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#70)
+	- userBalances[msg.sender][countryId] -= uint32(amount) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#234)
+	FlagWarsCore_v1_5_5_AntiDump.userBalances (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#69) can be used in cross functio
+n reentrancies:
+	- FlagWarsCore_v1_5_5_AntiDump.userBalances (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#69)
+Reentrancy in FlagWarsCore_v1_5_6_WhiteFlag.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteF
+lag.sol#333-429):
+	External calls:
+	- IERC20(config.payToken).safeTransfer(msg.sender,usdcProceeds) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#399)
+	State variables written after the call(s):
+	- cooldown.lastSellTime = block.timestamp (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#410)
+	FlagWarsCore_v1_5_6_WhiteFlag.cooldowns (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#100) can be used in cross functio
+n reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.cooldowns (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#100)
+	- cooldown.cooldownEndTime = block.timestamp + cooldownSeconds (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#411)
+	FlagWarsCore_v1_5_6_WhiteFlag.cooldowns (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#100) can be used in cross functio
+n reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.cooldowns (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#100)
+	- cooldown.tierApplied = tierApplied (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#412)
+	FlagWarsCore_v1_5_6_WhiteFlag.cooldowns (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#100) can be used in cross functio
+n reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.cooldowns (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#100)
+	- c.price = max(PRICE_MIN,c.price - (LAMBDA_TICKS * amount)) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#402)
+	FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94) can be used in cross function
+ reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#485-48
+9)
+	- FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94)
+	- FlagWarsCore_v1_5_6_WhiteFlag.isCountryWhiteFlagHalted(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#183-190
+)
+	- FlagWarsCore_v1_5_6_WhiteFlag.resumeCountry(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#539-547)
+	- updateCountryDayData(countryId,amount,true) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#416)
+		- countries[countryId].isWhiteFlagHalted = false (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#254)
+		- countries[countryId].whiteFlagHaltedAt = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#255)
+		- countries[countryId].isWhiteFlagHalted = true (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#271)
+		- countries[countryId].whiteFlagHaltedAt = block.timestamp (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#272)
+	FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94) can be used in cross function
+ reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#485-48
+9)
+	- FlagWarsCore_v1_5_6_WhiteFlag.countries (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#94)
+	- FlagWarsCore_v1_5_6_WhiteFlag.isCountryWhiteFlagHalted(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#183-190
+)
+	- FlagWarsCore_v1_5_6_WhiteFlag.resumeCountry(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#539-547)
+	- remainingSupply[countryId] += uint32(amount) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#406)
+	FlagWarsCore_v1_5_6_WhiteFlag.remainingSupply (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#96) can be used in cross fu
+nction reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.addCountry(uint256,string,address) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#485-48
+9)
+	- FlagWarsCore_v1_5_6_WhiteFlag.remainingSupply (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#96)
+	- userBalances[msg.sender][countryId] -= uint32(amount) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#405)
+	FlagWarsCore_v1_5_6_WhiteFlag.userBalances (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#95) can be used in cross funct
+ion reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.userBalances (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#95)
+	- updateWalletDayData(msg.sender,countryId,amount,true) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#415)
+		- data.dayTimestamp = currentDay (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#226)
+		- data.countrySellCount = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#227)
+		- data.totalSellCount = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#228)
+		- data.countrySellCount += amount (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#232)
+		- data.totalSellCount += amount (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#233)
+	FlagWarsCore_v1_5_6_WhiteFlag.walletDayData (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#103) can be used in cross fun
+ction reentrancies:
+	- FlagWarsCore_v1_5_6_WhiteFlag.checkWF1Cooldown(address,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#195-215
+)
+	- FlagWarsCore_v1_5_6_WhiteFlag.getWalletDayData(address,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#617-624
+)
+	- FlagWarsCore_v1_5_6_WhiteFlag.walletDayData (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#103)
+Reentrancy in Core.sellWithPermit(uint256,uint256,uint256,uint256,uint256,uint8,bytes32,bytes32) (contracts/Core.sol#26
+1-308):
+	External calls:
+	- IERC20Permit(c.token).permit(msg.sender,address(this),amount18,permitDeadline,v,r,s) (contracts/Core.sol#285-293)
+	- IERC20(c.token).transferFrom(msg.sender,address(this),amount18) (contracts/Core.sol#296)
+	- IERC20(USDC).transfer(msg.sender,netUSDC6) (contracts/Core.sol#299)
+	State variables written after the call(s):
+	- c.price8 = c.priceMin8 (contracts/Core.sol#305)
+	Core.countries (contracts/Core.sol#34) can be used in cross function reentrancies:
+	- Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121)
+	- Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197)
+	- Core.addCountry(uint256,string,address,uint256,uint32,uint32,uint256) (contracts/Core.sol#56-77)
+	- Core.countries (contracts/Core.sol#34)
+	- Core.mintCountryTokens(uint256,uint256) (contracts/Core.sol#83-93)
+	- Core.quoteBuy(uint256,uint256) (contracts/Core.sol#126-136)
+	- Core.quoteSell(uint256,uint256) (contracts/Core.sol#202-212)
+	- Core.remainingSupply(uint256) (contracts/Core.sol#98-101)
+	- c.price8 = newPrice (contracts/Core.sol#305)
+	Core.countries (contracts/Core.sol#34) can be used in cross function reentrancies:
+	- Core._quoteBuy(uint256,uint256) (contracts/Core.sol#107-121)
+	- Core._quoteSell(uint256,uint256) (contracts/Core.sol#181-197)
+	- Core.addCountry(uint256,string,address,uint256,uint32,uint32,uint256) (contracts/Core.sol#56-77)
+	- Core.countries (contracts/Core.sol#34)
+	- Core.mintCountryTokens(uint256,uint256) (contracts/Core.sol#83-93)
+	- Core.quoteBuy(uint256,uint256) (contracts/Core.sol#126-136)
+	- Core.quoteSell(uint256,uint256) (contracts/Core.sol#202-212)
+	- Core.remainingSupply(uint256) (contracts/Core.sol#98-101)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1
+INFO:Detectors:
+Reentrancy in FlagWarsCore.attack(uint256,uint256) (contracts/FlagWarsCore_Static.sol#329-380):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),feeUSDC6) (contracts/FlagWarsCore_Static.sol#364)
+	State variables written after the call(s):
+	- fromCountry.price = max(PRICE_MIN,fromCountry.price + deltaPrice8) (contracts/FlagWarsCore_Static.sol#368)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+	- toCountry.price = max(PRICE_MIN,toCountry.price - deltaPrice8) (contracts/FlagWarsCore_Static.sol#369)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+	- fromCountry.attacks ++ (contracts/FlagWarsCore_Static.sol#370)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+	- toCountry.attacks ++ (contracts/FlagWarsCore_Static.sol#371)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+Reentrancy in FlagWarsCore.attackBatch(FlagWarsCore.AttackItem[]) (contracts/FlagWarsCore_Static.sol#388-481):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),totalFeeUSDC6) (contracts/FlagWarsCore_Static.sol#
+452)
+	State variables written after the call(s):
+	- fromCountry_scope_10.price = max(PRICE_MIN,fromCountry_scope_10.price + finalDeltaPrice8) (contracts/FlagWarsCore_St
+atic.sol#467)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+	- toCountry_scope_11.price = max(PRICE_MIN,toCountry_scope_11.price - finalDeltaPrice8) (contracts/FlagWarsCore_Static
+.sol#468)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+	- fromCountry_scope_10.attacks ++ (contracts/FlagWarsCore_Static.sol#469)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+	- toCountry_scope_11.attacks ++ (contracts/FlagWarsCore_Static.sol#470)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+Reentrancy in FlagWarsCore.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#174-232):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),totalCostUSDC6) (contracts/FlagWarsCore_Static.sol
+#204)
+	State variables written after the call(s):
+	- c.price = max(PRICE_MIN,c.price + (KAPPA * amountToken18) / 1e18) (contracts/FlagWarsCore_Static.sol#207)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+	- c.totalSupply -= amountToken18 (contracts/FlagWarsCore_Static.sol#208)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+Reentrancy in FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880):
+	External calls:
+	- IERC20(c.token).safeTransferFrom(msg.sender,address(this),amount) (contracts/FlagWarsCore_Static.sol#870)
+	State variables written after the call(s):
+	- c.totalSupply += amount (contracts/FlagWarsCore_Static.sol#873)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+Reentrancy in FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906):
+	External calls:
+	- IERC20(c.token).safeTransferFrom(msg.sender,address(this),initialSupplyToken18) (contracts/FlagWarsCore_Static.sol#8
+94)
+	State variables written after the call(s):
+	- c.totalSupply = initialSupplyToken18 (contracts/FlagWarsCore_Static.sol#897)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+Reentrancy in FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#242-319):
+	External calls:
+	- IERC20(c.token).safeTransferFrom(msg.sender,address(this),amountToken18) (contracts/FlagWarsCore_Static.sol#287)
+	State variables written after the call(s):
+	- c.price = max(PRICE_MIN,c.price - (LAMBDA * amountToken18) / 1e18) (contracts/FlagWarsCore_Static.sol#290)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+	- c.totalSupply += amountToken18 (contracts/FlagWarsCore_Static.sol#291)
+	FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96) can be used in cross function reentrancies:
+	- FlagWarsCore.countries (contracts/FlagWarsCore_Static.sol#96)
+	- FlagWarsCore.createCountry(uint256,string,address) (contracts/FlagWarsCore_Static.sol#828-842)
+	- FlagWarsCore.depositCountryTokens(uint256,uint256) (contracts/FlagWarsCore_Static.sol#865-880)
+	- FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161)
+	- FlagWarsCore.getBuyPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#789-796)
+	- FlagWarsCore.getCountryInfo(uint256) (contracts/FlagWarsCore_Static.sol#774-784)
+	- FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110)
+	- FlagWarsCore.getRemainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1214-1220)
+	- FlagWarsCore.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#806-818)
+	- FlagWarsCore.getUserBalance(uint256,address) (contracts/FlagWarsCore_Static.sol#998-1003)
+	- FlagWarsCore.remainingSupply(uint256) (contracts/FlagWarsCore_Static.sol#1227-1233)
+	- FlagWarsCore.seedCountryPrice(uint256,uint256) (contracts/FlagWarsCore_Static.sol#847-857)
+	- FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1
+INFO:Detectors:
+FlagWarsCore_v1_5_6_WhiteFlag.updateWhiteFlagConfig(string,uint256).oldValue (contracts/FlagWarsCore_v1_5_6_WhiteFlag.s
+ol#512) is a local variable never initialized
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables
+INFO:Detectors:
+FlagWarsCore_v1_5_5_AntiDump.getSellPrice(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#342-360) ignores
+ return value by (extraFeeBps,None,None,None) = this.getAntiDumpInfo(countryId,amount) (contracts/FlagWarsCore_v1_5_5_A
+ntiDump.sol#350)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return
+INFO:Detectors:
+ERC20Permit.constructor(string).name (node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol#44) s
+hadows:
+	- ERC20.name() (node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol#62-64) (function)
+	- IERC20Metadata.name() (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol#17) (function)
+FlagToken.constructor(string,string,address).name (contracts/FlagToken.sol#21) shadows:
+	- ERC20.name() (node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol#62-64) (function)
+	- IERC20Metadata.name() (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol#17) (function)
+FlagToken.constructor(string,string,address).symbol (contracts/FlagToken.sol#22) shadows:
+	- ERC20.symbol() (node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol#70-72) (function)
+	- IERC20Metadata.symbol() (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol#22) (functio
+n)
+FlagWarsTokenNonTransferable.constructor(string,string,address).name (contracts/FlagWarsTokenNonTransferable.sol#20) sh
+adows:
+	- ERC20.name() (node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol#62-64) (function)
+	- IERC20Metadata.name() (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol#17) (function)
+FlagWarsTokenNonTransferable.constructor(string,string,address).symbol (contracts/FlagWarsTokenNonTransferable.sol#21) 
+shadows:
+	- ERC20.symbol() (node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol#70-72) (function)
+	- IERC20Metadata.symbol() (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol#22) (functio
+n)
+MockToken.constructor(string,string).name (contracts/mocks/MockToken.sol#11) shadows:
+	- ERC20.name() (node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol#62-64) (function)
+	- IERC20Metadata.name() (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol#17) (function)
+MockToken.constructor(string,string).symbol (contracts/mocks/MockToken.sol#11) shadows:
+	- ERC20.symbol() (node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol#70-72) (function)
+	- IERC20Metadata.symbol() (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol#22) (functio
+n)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing
+INFO:Detectors:
+Core.setFees(uint16,uint16) (contracts/Core.sol#50-54) should emit an event for: 
+	- buyFeeBps = buyFee (contracts/Core.sol#52) 
+	- sellFeeBps = sellFee (contracts/Core.sol#53) 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-events-arithmetic
+INFO:Detectors:
+Achievements.setCore(address).coreAddress (contracts/Achievements.sol#17) lacks a zero-check on :
+		- core = coreAddress (contracts/Achievements.sol#19)
+Ownable2Step.transferOwnership(address).newOwner (node_modules/@openzeppelin/contracts/access/Ownable2Step.sol#35) lack
+s a zero-check on :
+		- _pendingOwner = newOwner (node_modules/@openzeppelin/contracts/access/Ownable2Step.sol#36)
+FlagWarsCore_v1_5_4.setTreasuryWallet(address)._treasuryWallet (contracts/FlagWarsCore_v1_5_4.sol#402) lacks a zero-che
+ck on :
+		- treasuryWallet = _treasuryWallet (contracts/FlagWarsCore_v1_5_4.sol#403)
+FlagWarsCore_v1_5_4.setRevenueWallet(address)._revenueWallet (contracts/FlagWarsCore_v1_5_4.sol#410) lacks a zero-check
+ on :
+		- revenueWallet = _revenueWallet (contracts/FlagWarsCore_v1_5_4.sol#411)
+FlagWarsCore_v1_5_4.setCommissionsWallet(address)._commissionsWallet (contracts/FlagWarsCore_v1_5_4.sol#418) lacks a ze
+ro-check on :
+		- commissionsWallet = _commissionsWallet (contracts/FlagWarsCore_v1_5_4.sol#419)
+FlagWarsToken.setCore(address).coreAddress (contracts/FlagWarsToken.sol#17) lacks a zero-check on :
+		- core = coreAddress (contracts/FlagWarsToken.sol#19)
+FlagWarsTokenNonTransferable.constructor(string,string,address)._coreContract (contracts/FlagWarsTokenNonTransferable.s
+ol#22) lacks a zero-check on :
+		- coreContract = _coreContract (contracts/FlagWarsTokenNonTransferable.sol#24)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+Core.attackBatch(Core.AttackItem[]) (contracts/Core.sol#448-496) has external calls inside a loop: require(bool,string)
+(IERC20(countries[it.fromId].token).balanceOf(msg.sender) >= it.amountToken18,Core: insufficient flag balance) (contrac
+ts/Core.sol#461-464)
+FlagWarsCore.attackBatch(FlagWarsCore.AttackItem[]) (contracts/FlagWarsCore_Static.sol#365-428) has external calls insi
+de a loop: bal = IERC20(fromCountry.token).balanceOf(msg.sender) (contracts/FlagWarsCore_Static.sol#388-390)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+INFO:Detectors:
+FlagWarsCore.attackBatch(FlagWarsCore.AttackItem[]) (contracts/FlagWarsCore_Static.sol#388-481) has external calls insi
+de a loop: bal = IERC20(fromCountry_scope_3.token).balanceOf(msg.sender) (contracts/FlagWarsCore_Static.sol#429)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+INFO:Detectors:
+Reentrancy in FlagWarsCore.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#168-214):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),totalCostUSDC6) (contracts/FlagWarsCore_Static.sol
+#197-198)
+	- _splitFees(totalCostUSDC6) (contracts/FlagWarsCore_Static.sol#200-201)
+		- returndata = address(token).functionCall(data,SafeERC20: low-level call failed) (node_modules/@openzeppelin/contrac
+ts/token/ERC20/utils/SafeERC20.sol#122)
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+		- IERC20(config.payToken).safeTransfer(config.commissions,referralFee) (contracts/FlagWarsCore_Static.sol#438-440)
+		- IERC20(config.payToken).safeTransfer(config.revenue,revenueFee) (contracts/FlagWarsCore_Static.sol#442-445)
+	External calls sending eth:
+	- _splitFees(totalCostUSDC6) (contracts/FlagWarsCore_Static.sol#200-201)
+		- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+	State variables written after the call(s):
+	- countryTouched[countryId] = true (contracts/FlagWarsCore_Static.sol#207-208)
+Reentrancy in FlagWarsCore_v1_5_4.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#119-159):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),usdcAmount) (contracts/FlagWarsCore_v1_5_4.sol#139
+)
+	State variables written after the call(s):
+	- countryTouched[countryId] = true (contracts/FlagWarsCore_v1_5_4.sol#147)
+	- userBalances[msg.sender][countryId] += uint32(amount) (contracts/FlagWarsCore_v1_5_4.sol#146)
+Reentrancy in FlagWarsCore_v1_5_5_AntiDump.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump
+.sol#124-163):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),usdcAmount) (contracts/FlagWarsCore_v1_5_5_AntiDum
+p.sol#145)
+	State variables written after the call(s):
+	- countryTouched[countryId] = true (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#153)
+	- userBalances[msg.sender][countryId] += uint32(amount) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#152)
+Reentrancy in FlagWarsCore_v1_5_6_WhiteFlag.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFl
+ag.sol#282-327):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),usdcAmount) (contracts/FlagWarsCore_v1_5_6_WhiteFl
+ag.sol#306)
+	State variables written after the call(s):
+	- updateCountryDayData(countryId,amount,false) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#317)
+		- data.dayTimestamp = currentDay (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#246)
+		- data.sellCount = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#247)
+		- data.buyCount = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#248)
+		- data.netSold = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#249)
+		- data.isHalted = false (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#250)
+		- data.haltedAt = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#251)
+		- data.sellCount += amount (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#260)
+		- data.netSold += amount (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#261)
+		- data.buyCount += amount (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#263)
+		- data.isHalted = true (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#269)
+		- data.haltedAt = block.timestamp (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#270)
+		- data.netSold = data.sellCount - data.buyCount (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#264)
+		- data.netSold = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#264)
+	- countryTouched[countryId] = true (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#314)
+	- userBalances[msg.sender][countryId] += uint32(amount) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#313)
+Reentrancy in AchievementsSBT.mint(AchievementsSBT.MintAuth,bytes) (contracts/AchievementsSBT.sol#170-229):
+	External calls:
+	- IERC20(payToken).safeTransferFrom(msg.sender,revenue,PRICE_USDC6) (contracts/AchievementsSBT.sol#210)
+	State variables written after the call(s):
+	- tokenId = _nextTokenId ++ (contracts/AchievementsSBT.sol#213)
+Reentrancy in AchievementsSBT.mint(AchievementsSBT.MintAuth,bytes) (contracts/AchievementsSBT.sol#170-229):
+	External calls:
+	- IERC20(payToken).safeTransferFrom(msg.sender,revenue,PRICE_USDC6) (contracts/AchievementsSBT.sol#210)
+	- _safeMint(msg.sender,tokenId) (contracts/AchievementsSBT.sol#214)
+		- retval = IERC721Receiver(to).onERC721Received(_msgSender(),from,tokenId,data) (node_modules/@openzeppelin/contracts
+/token/ERC721/ERC721.sol#406-417)
+	State variables written after the call(s):
+	- tokenMetadata[tokenId] = TokenMetadata({owner:msg.sender,category:auth.category,level:auth.level,timestamp:block.tim
+estamp}) (contracts/AchievementsSBT.sol#220-225)
+Reentrancy in FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#219-300):
+	External calls:
+	- IERC20(c.token).safeTransferFrom(msg.sender,address(this),amountToken18) (contracts/FlagWarsCore_Static.sol#268-270)
+	State variables written after the call(s):
+	- countryTouched[countryId] = true (contracts/FlagWarsCore_Static.sol#273)
+Reentrancy in FlagWarsCore_v1_5_4.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#167-212):
+	External calls:
+	- IERC20(config.payToken).safeTransfer(msg.sender,usdcProceeds) (contracts/FlagWarsCore_v1_5_4.sol#191)
+	State variables written after the call(s):
+	- countryTouched[countryId] = true (contracts/FlagWarsCore_v1_5_4.sol#199)
+	- remainingSupply[countryId] += uint32(amount) (contracts/FlagWarsCore_v1_5_4.sol#198)
+Reentrancy in FlagWarsCore_v1_5_5_AntiDump.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDum
+p.sol#169-254):
+	External calls:
+	- IERC20(config.payToken).safeTransfer(msg.sender,usdcProceeds) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#228)
+	State variables written after the call(s):
+	- countryTouched[countryId] = true (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#236)
+Reentrancy in FlagWarsCore_v1_5_6_WhiteFlag.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteF
+lag.sol#333-429):
+	External calls:
+	- IERC20(config.payToken).safeTransfer(msg.sender,usdcProceeds) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#399)
+	State variables written after the call(s):
+	- updateCountryDayData(countryId,amount,true) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#416)
+		- data.dayTimestamp = currentDay (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#246)
+		- data.sellCount = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#247)
+		- data.buyCount = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#248)
+		- data.netSold = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#249)
+		- data.isHalted = false (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#250)
+		- data.haltedAt = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#251)
+		- data.sellCount += amount (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#260)
+		- data.netSold += amount (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#261)
+		- data.buyCount += amount (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#263)
+		- data.isHalted = true (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#269)
+		- data.haltedAt = block.timestamp (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#270)
+		- data.netSold = data.sellCount - data.buyCount (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#264)
+		- data.netSold = 0 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#264)
+	- countryTouched[countryId] = true (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#407)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+INFO:Detectors:
+Reentrancy in FlagWarsCore.attack(uint256,uint256) (contracts/FlagWarsCore_Static.sol#329-380):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),feeUSDC6) (contracts/FlagWarsCore_Static.sol#364)
+	State variables written after the call(s):
+	- pendingWithdrawals[config.revenue] += feeUSDC6 (contracts/FlagWarsCore_Static.sol#375)
+Reentrancy in FlagWarsCore.attackBatch(FlagWarsCore.AttackItem[]) (contracts/FlagWarsCore_Static.sol#388-481):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),totalFeeUSDC6) (contracts/FlagWarsCore_Static.sol#
+452)
+	State variables written after the call(s):
+	- pendingWithdrawals[config.revenue] += totalFeeUSDC6 (contracts/FlagWarsCore_Static.sol#478)
+	- finalDeltaPrice8 = _applyDeltaWithWarBalance(toId_scope_9,itemDelta[i_scope_7]) (contracts/FlagWarsCore_Static.sol#4
+64)
+		- s1.windowStart = block.timestamp (contracts/FlagWarsCore_Static.sol#596)
+		- s1.attackCount = 1 (contracts/FlagWarsCore_Static.sol#597)
+		- s1.attackCount ++ (contracts/FlagWarsCore_Static.sol#599)
+	- finalDeltaPrice8 = _applyDeltaWithWarBalance(toId_scope_9,itemDelta[i_scope_7]) (contracts/FlagWarsCore_Static.sol#4
+64)
+		- s2.windowStart = block.timestamp (contracts/FlagWarsCore_Static.sol#604)
+		- s2.attackCount = 1 (contracts/FlagWarsCore_Static.sol#605)
+		- s2.attackCount ++ (contracts/FlagWarsCore_Static.sol#607)
+Reentrancy in FlagWarsCore.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#174-232):
+	External calls:
+	- IERC20(config.payToken).safeTransferFrom(msg.sender,address(this),totalCostUSDC6) (contracts/FlagWarsCore_Static.sol
+#204)
+	State variables written after the call(s):
+	- countryTouched[countryId] = true (contracts/FlagWarsCore_Static.sol#209)
+	- pendingWithdrawals[config.commissions] += referralFee (contracts/FlagWarsCore_Static.sol#218)
+	- pendingWithdrawals[config.revenue] += revenueFee (contracts/FlagWarsCore_Static.sol#222)
+Reentrancy in FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#242-319):
+	External calls:
+	- IERC20(c.token).safeTransferFrom(msg.sender,address(this),amountToken18) (contracts/FlagWarsCore_Static.sol#287)
+	State variables written after the call(s):
+	- countryTouched[countryId] = true (contracts/FlagWarsCore_Static.sol#292)
+	- pendingWithdrawals[config.commissions] += referralFee (contracts/FlagWarsCore_Static.sol#300)
+	- pendingWithdrawals[config.revenue] += revenueFee (contracts/FlagWarsCore_Static.sol#304)
+	- pendingWithdrawals[config.revenue] += extraFeeUSDC6 (contracts/FlagWarsCore_Static.sol#311)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+INFO:Detectors:
+Reentrancy in FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#812-833):
+	External calls:
+	- IERC20(c.token).safeTransferFrom(msg.sender,address(this),initialSupplyToken18) (contracts/FlagWarsCore_Static.sol#8
+24-826)
+	Event emitted after the call(s):
+	- SupplySeeded(countryId,initialSupplyToken18) (contracts/FlagWarsCore_Static.sol#831-833)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+Reentrancy in FlagWarsCore.seedCountrySupply(uint256,uint256) (contracts/FlagWarsCore_Static.sol#886-906):
+	External calls:
+	- IERC20(c.token).safeTransferFrom(msg.sender,address(this),initialSupplyToken18) (contracts/FlagWarsCore_Static.sol#8
+94)
+	Event emitted after the call(s):
+	- SupplySeeded(countryId,initialSupplyToken18) (contracts/FlagWarsCore_Static.sol#905)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+ERC20Permit.permit(address,address,uint256,uint256,uint8,bytes32,bytes32) (node_modules/@openzeppelin/contracts/token/E
+RC20/extensions/ERC20Permit.sol#49-68) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp <= deadline,ERC20Permit: expired deadline) (node_modules/@openzeppelin/contract
+s/token/ERC20/extensions/ERC20Permit.sol#58)
+AchievementsSBT.mint(AchievementsSBT.MintAuth,bytes) (contracts/AchievementsSBT.sol#170-229) uses timestamp for compari
+sons
+	Dangerous comparisons:
+	- block.timestamp > auth.deadline (contracts/AchievementsSBT.sol#187)
+Core.buy(uint256,uint256,uint256,uint256) (contracts/Core.sol#141-175) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp <= deadline,Core: deadline passed) (contracts/Core.sol#146)
+Core.sell(uint256,uint256,uint256,uint256) (contracts/Core.sol#217-248) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp <= deadline,Core: deadline passed) (contracts/Core.sol#222)
+Core.sellWithPermit(uint256,uint256,uint256,uint256,uint256,uint8,bytes32,bytes32) (contracts/Core.sol#261-308) uses ti
+mestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp <= tradeDeadline,Core: trade deadline passed) (contracts/Core.sol#271)
+FlagWarsCore_Production.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Production.sol#245-292) uses times
+tamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp > deadline (contracts/FlagWarsCore_Production.sol#252)
+FlagWarsCore_Production.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Production.sol#294-370) uses time
+stamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp > deadline (contracts/FlagWarsCore_Production.sol#301)
+FlagWarsCore_Production._touchBucket(address) (contracts/FlagWarsCore_Production.sol#407-413) uses timestamp for compar
+isons
+	Dangerous comparisons:
+	- lastBucket[user] != bucket (contracts/FlagWarsCore_Production.sol#409)
+FlagWarsCore_Production._touchBucketPerTarget(address,uint256) (contracts/FlagWarsCore_Production.sol#416-422) uses tim
+estamp for comparisons
+	Dangerous comparisons:
+	- lastBucketPerTarget[user][targetId] != bucket (contracts/FlagWarsCore_Production.sol#418)
+FlagWarsCore.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#168-214) uses timestamp for compar
+isons
+	Dangerous comparisons:
+	- block.timestamp > deadline (contracts/FlagWarsCore_Static.sol#172-173)
+FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#219-300) uses timestamp for compa
+risons
+	Dangerous comparisons:
+	- block.timestamp > deadline (contracts/FlagWarsCore_Static.sol#223-225)
+FlagWarsCore._applyAntiDump(address,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#460-492) uses timestamp
+ for comparisons
+	Dangerous comparisons:
+	- userCooldownUntil[user][countryId] > block.timestamp (contracts/FlagWarsCore_Static.sol#467)
+FlagWarsCore._applyDeltaWithWarBalance(uint256,uint256) (contracts/FlagWarsCore_Static.sol#536-565) uses timestamp for 
+comparisons
+	Dangerous comparisons:
+	- block.timestamp - s1.windowStart > wb1Tier.windowSec (contracts/FlagWarsCore_Static.sol#541-542)
+	- block.timestamp - s2.windowStart > wb2Tier.windowSec (contracts/FlagWarsCore_Static.sol#549-550)
+FlagWarsCore.getWarBalanceStateByTarget(uint256) (contracts/FlagWarsCore_Static.sol#592-634) uses timestamp for compari
+sons
+	Dangerous comparisons:
+	- s1.windowStart > 0 && block.timestamp - s1.windowStart < wb1Tier.windowSec (contracts/FlagWarsCore_Static.sol#607-61
+0)
+	- s2.windowStart > 0 && block.timestamp - s2.windowStart < wb2Tier.windowSec (contracts/FlagWarsCore_Static.sol#613-61
+5)
+	- s2.attackCount >= wb2Tier.threshold (contracts/FlagWarsCore_Static.sol#621-622)
+	- s1.attackCount >= wb1Tier.threshold (contracts/FlagWarsCore_Static.sol#623-626)
+FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1048-1073) uses timestamp for comparis
+ons
+	Dangerous comparisons:
+	- inCooldown = cooldownUntil > block.timestamp (contracts/FlagWarsCore_Static.sol#1070)
+FlagWarsCore.getUserCooldownInfo(address,uint256) (contracts/FlagWarsCore_Static.sol#1082-1096) uses timestamp for comp
+arisons
+	Dangerous comparisons:
+	- cooldownUntil > block.timestamp (contracts/FlagWarsCore_Static.sol#1088-1089)
+FlagWarsCore_v1_5_4.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#119-159) uses timestamp for
+ comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp <= deadline,DeadlineExceeded) (contracts/FlagWarsCore_v1_5_4.sol#123)
+FlagWarsCore_v1_5_4.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_4.sol#167-212) uses timestamp fo
+r comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp <= deadline,DeadlineExceeded) (contracts/FlagWarsCore_v1_5_4.sol#171)
+FlagWarsCore_v1_5_5_AntiDump.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#124-163) 
+uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp <= deadline,DeadlineExceeded) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#129)
+FlagWarsCore_v1_5_5_AntiDump.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#169-254)
+ uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp <= deadline,DeadlineExceeded) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#173)
+	- require(bool,string)(block.timestamp >= cooldown.cooldownEndTime,CooldownActive) (contracts/FlagWarsCore_v1_5_5_Anti
+Dump.sol#182)
+FlagWarsCore_v1_5_5_AntiDump.getUserCooldownInfo(address,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#308-325) 
+uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp < cooldown.cooldownEndTime (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#318)
+FlagWarsCore_v1_5_6_WhiteFlag.isCountryWhiteFlagHalted(uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#183-190) u
+ses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp < haltEndTime (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#189)
+FlagWarsCore_v1_5_6_WhiteFlag.checkWF1Cooldown(address,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#195-215) u
+ses timestamp for comparisons
+	Dangerous comparisons:
+	- data.dayTimestamp != currentDay (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#200)
+	- (block.timestamp < cooldownEndTime,cooldownEndTime) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#205)
+	- (block.timestamp < cooldownEndTime_scope_0,cooldownEndTime_scope_0) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#211
+)
+FlagWarsCore_v1_5_6_WhiteFlag.updateWalletDayData(address,uint256,uint256,bool) (contracts/FlagWarsCore_v1_5_6_WhiteFla
+g.sol#220-235) uses timestamp for comparisons
+	Dangerous comparisons:
+	- data.dayTimestamp != currentDay (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#225)
+FlagWarsCore_v1_5_6_WhiteFlag.updateCountryDayData(uint256,uint256,bool) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#2
+40-276) uses timestamp for comparisons
+	Dangerous comparisons:
+	- data.dayTimestamp != currentDay (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#245)
+FlagWarsCore_v1_5_6_WhiteFlag.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#282-327
+) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp <= deadline,DeadlineExceeded) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#287)
+FlagWarsCore_v1_5_6_WhiteFlag.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#333-42
+9) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp <= deadline,DeadlineExceeded) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#337)
+	- require(bool,string)(! inCooldown,WhiteFlagCooldownActive) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#349)
+	- require(bool,string)(block.timestamp >= cooldown.cooldownEndTime,CooldownActive) (contracts/FlagWarsCore_v1_5_6_Whit
+eFlag.sol#353)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+FlagWarsCore.buy(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#174-232) uses timestamp for compar
+isons
+	Dangerous comparisons:
+	- block.timestamp > deadline (contracts/FlagWarsCore_Static.sol#181)
+FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#242-319) uses timestamp for compa
+risons
+	Dangerous comparisons:
+	- block.timestamp > deadline (contracts/FlagWarsCore_Static.sol#249)
+FlagWarsCore._applyAntiDump(address,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#507-546) uses timestamp
+ for comparisons
+	Dangerous comparisons:
+	- userCooldownUntil[user][countryId] > block.timestamp (contracts/FlagWarsCore_Static.sol#516)
+FlagWarsCore._applyDeltaWithWarBalance(uint256,uint256) (contracts/FlagWarsCore_Static.sol#589-627) uses timestamp for 
+comparisons
+	Dangerous comparisons:
+	- block.timestamp - s1.windowStart > wb1Tier.windowSec (contracts/FlagWarsCore_Static.sol#595)
+	- block.timestamp - s2.windowStart > wb2Tier.windowSec (contracts/FlagWarsCore_Static.sol#603)
+FlagWarsCore.getWarBalanceStateByTarget(uint256) (contracts/FlagWarsCore_Static.sol#659-698) uses timestamp for compari
+sons
+	Dangerous comparisons:
+	- s1.windowStart > 0 && block.timestamp - s1.windowStart < wb1Tier.windowSec (contracts/FlagWarsCore_Static.sol#672)
+	- s2.windowStart > 0 && block.timestamp - s2.windowStart < wb2Tier.windowSec (contracts/FlagWarsCore_Static.sol#677)
+	- s2.attackCount >= wb2Tier.threshold (contracts/FlagWarsCore_Static.sol#683)
+	- s1.attackCount >= wb1Tier.threshold (contracts/FlagWarsCore_Static.sol#685)
+FlagWarsCore.getAntiDumpInfo(uint256,uint256) (contracts/FlagWarsCore_Static.sol#1123-1161) uses timestamp for comparis
+ons
+	Dangerous comparisons:
+	- inCooldown = cooldownUntil > block.timestamp (contracts/FlagWarsCore_Static.sol#1151)
+FlagWarsCore.getUserCooldownInfo(address,uint256) (contracts/FlagWarsCore_Static.sol#1171-1187) uses timestamp for comp
+arisons
+	Dangerous comparisons:
+	- cooldownUntil > block.timestamp (contracts/FlagWarsCore_Static.sol#1178)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+ERC721._checkOnERC721Received(address,address,uint256,bytes) (node_modules/@openzeppelin/contracts/token/ERC721/ERC721.
+sol#399-421) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol#413-415)
+Address._revert(bytes,string) (node_modules/@openzeppelin/contracts/utils/Address.sol#231-243) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Address.sol#236-239)
+ShortStrings.toString(ShortString) (node_modules/@openzeppelin/contracts/utils/ShortStrings.sol#63-73) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/ShortStrings.sol#68-71)
+StorageSlot.getAddressSlot(bytes32) (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#62-67) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#64-66)
+StorageSlot.getBooleanSlot(bytes32) (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#72-77) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#74-76)
+StorageSlot.getBytes32Slot(bytes32) (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#82-87) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#84-86)
+StorageSlot.getUint256Slot(bytes32) (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#92-97) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#94-96)
+StorageSlot.getStringSlot(bytes32) (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#102-107) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#104-106)
+StorageSlot.getStringSlot(string) (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#112-117) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#114-116)
+StorageSlot.getBytesSlot(bytes32) (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#122-127) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#124-126)
+StorageSlot.getBytesSlot(bytes) (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#132-137) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#134-136)
+Strings.toString(uint256) (node_modules/@openzeppelin/contracts/utils/Strings.sol#19-39) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Strings.sol#25-27)
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/Strings.sol#31-33)
+ECDSA.tryRecover(bytes32,bytes) (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#55-72) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#63-67)
+ECDSA.toEthSignedMessageHash(bytes32) (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#165-174) uses 
+assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#169-173)
+ECDSA.toTypedDataHash(bytes32,bytes32) (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#197-206) uses
+ assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#199-205)
+Math.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts/utils/math/Math.sol#55-134) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/math/Math.sol#62-66)
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/math/Math.sol#85-92)
+	- INLINE ASM (node_modules/@openzeppelin/contracts/utils/math/Math.sol#99-108)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+6 different versions of Solidity are used:
+	- Version constraint ^0.8.0 is used by:
+		-^0.8.0 (node_modules/@openzeppelin/contracts/access/Ownable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/access/Ownable2Step.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/interfaces/IERC5267.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/security/Pausable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Context.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Counters.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#5)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Strings.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/math/SignedMath.sol#4)
+	- Version constraint ^0.8.1 is used by:
+		-^0.8.1 (node_modules/@openzeppelin/contracts/utils/Address.sol#4)
+	- Version constraint ^0.8.8 is used by:
+		-^0.8.8 (node_modules/@openzeppelin/contracts/utils/ShortStrings.sol#4)
+		-^0.8.8 (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#4)
+	- Version constraint ^0.8.24 is used by:
+		-^0.8.24 (contracts/Achievements.sol#2)
+		-^0.8.24 (contracts/AchievementsSBT.sol#2)
+		-^0.8.24 (contracts/FlagWarsCore_Production.sol#2)
+		-^0.8.24 (contracts/FlagWarsCore_Static.sol#2)
+		-^0.8.24 (contracts/FlagWarsToken.sol#2)
+		-^0.8.24 (contracts/mocks/MockToken.sol#2)
+		-^0.8.24 (contracts/mocks/MockUSDC.sol#2)
+	- Version constraint ^0.8.20 is used by:
+		-^0.8.20 (contracts/Core.sol#2)
+		-^0.8.20 (contracts/FlagToken.sol#2)
+	- Version constraint ^0.8.19 is used by:
+		-^0.8.19 (contracts/FlagWarsCore_v1_5_4.sol#2)
+		-^0.8.19 (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#2)
+		-^0.8.19 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#2)
+		-^0.8.19 (contracts/FlagWarsTokenNonTransferable.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+3 different versions of Solidity are used:
+	- Version constraint ^0.8.0 is used by:
+		-^0.8.0 (node_modules/@openzeppelin/contracts/access/Ownable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/access/Ownable2Step.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/security/Pausable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts/utils/Context.sol#4)
+	- Version constraint ^0.8.1 is used by:
+		-^0.8.1 (node_modules/@openzeppelin/contracts/utils/Address.sol#4)
+	- Version constraint ^0.8.24 is used by:
+		-^0.8.24 (contracts/FlagWarsCore_Static.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+FlagWarsCore_Production.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Production.sol#294-370) has a hig
+h cyclomatic complexity (14).
+FlagWarsCore_Production.attackBatch(AttackItem[]) (contracts/FlagWarsCore_Production.sol#483-571) has a high cyclomatic
+ complexity (16).
+FlagWarsCore.sell(uint256,uint256,uint256,uint256) (contracts/FlagWarsCore_Static.sol#219-300) has a high cyclomatic co
+mplexity (12).
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#cyclomatic-complexity
+INFO:Detectors:
+FlagWarsCore.attackBatch(FlagWarsCore.AttackItem[]) (contracts/FlagWarsCore_Static.sol#388-481) has a high cyclomatic c
+omplexity (16).
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#cyclomatic-complexity
+INFO:Detectors:
+AchievementsSBT._baseURI() (contracts/AchievementsSBT.sol#252-254) is never used and should be removed
+FlagWarsCore._applyWarBalance(address,uint256) (contracts/FlagWarsCore_Static.sol#573-576) is never used and should be 
+removed
+FlagWarsCore._updateWarBalanceCounters(address) (contracts/FlagWarsCore_Static.sol#578-580) is never used and should be
+ removed
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code
+INFO:Detectors:
+FlagWarsCore._splitFees(uint256) (contracts/FlagWarsCore_Static.sol#491-496) is never used and should be removed
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code
+INFO:Detectors:
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/access/Ownable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/access/Ownable2Step.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/interfaces/IERC5267.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/security/Pausable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Context.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Counters.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/StorageSlot.sol#5)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Strings.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/math/Math.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/math/SignedMath.sol#4)
+Version constraint ^0.8.1 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.1 (node_modules/@openzeppelin/contracts/utils/Address.sol#4)
+Version constraint ^0.8.8 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- UserDefinedValueTypesBug
+	- SignedImmutables.
+It is used by:
+	- ^0.8.8 (node_modules/@openzeppelin/contracts/utils/ShortStrings.sol#4)
+	- ^0.8.8 (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#4)
+Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess.
+It is used by:
+	- ^0.8.20 (contracts/Core.sol#2)
+	- ^0.8.20 (contracts/FlagToken.sol#2)
+Version constraint ^0.8.19 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess.
+It is used by:
+	- ^0.8.19 (contracts/FlagWarsCore_v1_5_4.sol#2)
+	- ^0.8.19 (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#2)
+	- ^0.8.19 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#2)
+	- ^0.8.19 (contracts/FlagWarsTokenNonTransferable.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/access/Ownable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/access/Ownable2Step.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/security/Pausable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts/utils/Context.sol#4)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Low level call in SafeERC20._callOptionalReturnBool(IERC20,bytes) (node_modules/@openzeppelin/contracts/token/ERC20/uti
+ls/SafeERC20.sol#134-142):
+	- (success,returndata) = address(token).call(data) (node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
+ol#139)
+Low level call in Address.sendValue(address,uint256) (node_modules/@openzeppelin/contracts/utils/Address.sol#64-69):
+	- (success,None) = recipient.call{value: amount}() (node_modules/@openzeppelin/contracts/utils/Address.sol#67)
+Low level call in Address.functionCallWithValue(address,bytes,uint256,string) (node_modules/@openzeppelin/contracts/uti
+ls/Address.sol#128-137):
+	- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#135)
+Low level call in Address.functionStaticCall(address,bytes,string) (node_modules/@openzeppelin/contracts/utils/Address.
+sol#155-162):
+	- (success,returndata) = target.staticcall(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#160)
+Low level call in Address.functionDelegateCall(address,bytes,string) (node_modules/@openzeppelin/contracts/utils/Addres
+s.sol#180-187):
+	- (success,returndata) = target.delegatecall(data) (node_modules/@openzeppelin/contracts/utils/Address.sol#185)
+Low level call in Core.mintCountryTokens(uint256,uint256) (contracts/Core.sol#83-93):
+	- (success,None) = countries[id].token.call(abi.encodeWithSignature(mint(address,uint256),address(this),amount18)) (co
+ntracts/Core.sol#89-91)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Detectors:
+Function ERC20Permit.DOMAIN_SEPARATOR() (node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol#81
+-83) is not in mixedCase
+Variable ERC20Permit._PERMIT_TYPEHASH_DEPRECATED_SLOT (node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC2
+0Permit.sol#37) is not in mixedCase
+Function IERC20Permit.DOMAIN_SEPARATOR() (node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol#
+89) is not in mixedCase
+Function ERC721.__unsafe_increaseBalance(address,uint256) (node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol
+#463-465) is not in mixedCase
+Parameter AchievementsSBT.setSigner(address)._signer (contracts/AchievementsSBT.sol#260) is not in mixedCase
+Parameter AchievementsSBT.setPayToken(address)._payToken (contracts/AchievementsSBT.sol#267) is not in mixedCase
+Parameter AchievementsSBT.setRevenue(address)._revenue (contracts/AchievementsSBT.sol#274) is not in mixedCase
+Variable Core.USDC (contracts/Core.sol#15) is not in mixedCase
+Variable Core.TREASURY (contracts/Core.sol#16) is not in mixedCase
+Variable Core.REVENUE (contracts/Core.sol#17) is not in mixedCase
+Variable FlagToken.TREASURY (contracts/FlagToken.sol#18) is not in mixedCase
+Contract FlagWarsCore_Production (contracts/FlagWarsCore_Production.sol#85-572) is not in CapWords
+Parameter FlagWarsCore_Production.setConfig(Config)._cfg (contracts/FlagWarsCore_Production.sol#146) is not in mixedCas
+e
+Parameter FlagWarsCore.setConfig(address,address,address,address)._payToken (contracts/FlagWarsCore_Static.sol#841) is 
+not in mixedCase
+Parameter FlagWarsCore.setConfig(address,address,address,address)._revenue (contracts/FlagWarsCore_Static.sol#843-845) 
+is not in mixedCase
+Parameter FlagWarsCore.setConfig(address,address,address,address)._commissions (contracts/FlagWarsCore_Static.sol#845) 
+is not in mixedCase
+Parameter FlagWarsCore.setFees(uint256,uint256)._entryFeeBps (contracts/FlagWarsCore_Static.sol#863) is not in mixedCas
+e
+Parameter FlagWarsCore.setFees(uint256,uint256)._sellFeeBps (contracts/FlagWarsCore_Static.sol#863) is not in mixedCase
+Contract FlagWarsCore_v1_5_4 (contracts/FlagWarsCore_v1_5_4.sol#13-456) is not in CapWords
+Parameter FlagWarsCore_v1_5_4.setTreasuryWallet(address)._treasuryWallet (contracts/FlagWarsCore_v1_5_4.sol#402) is not
+ in mixedCase
+Parameter FlagWarsCore_v1_5_4.setRevenueWallet(address)._revenueWallet (contracts/FlagWarsCore_v1_5_4.sol#410) is not i
+n mixedCase
+Parameter FlagWarsCore_v1_5_4.setCommissionsWallet(address)._commissionsWallet (contracts/FlagWarsCore_v1_5_4.sol#418) 
+is not in mixedCase
+Contract FlagWarsCore_v1_5_5_AntiDump (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#14-476) is not in CapWords
+Contract FlagWarsCore_v1_5_6_WhiteFlag (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#14-652) is not in CapWords
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+ShortStrings.slitherConstructorConstantVariables() (node_modules/@openzeppelin/contracts/utils/ShortStrings.sol#40-122)
+ uses literals with too many digits:
+	- _FALLBACK_SENTINEL = 0x00000000000000000000000000000000000000000000000000000000000000FF (node_modules/@openzeppelin/
+contracts/utils/ShortStrings.sol#42)
+Core.previewAttackFee(address,uint256) (contracts/Core.sol#340-366) uses literals with too many digits:
+	- baseFeeUSDC6 = 400000 (contracts/Core.sol#351)
+Core.previewAttackFee(address,uint256) (contracts/Core.sol#340-366) uses literals with too many digits:
+	- baseFeeUSDC6 = 300000 (contracts/Core.sol#359)
+FlagWarsCore._calculateAttackFee(uint256) (contracts/FlagWarsCore_Static.sol#499-515) uses literals with too many digit
+s:
+	- 300000 (contracts/FlagWarsCore_Static.sol#508)
+FlagWarsCore._calculateAttackFee(uint256) (contracts/FlagWarsCore_Static.sol#499-515) uses literals with too many digit
+s:
+	- 400000 (contracts/FlagWarsCore_Static.sol#513)
+FlagWarsCore.getConfig() (contracts/FlagWarsCore_Static.sol#901-960) uses literals with too many digits:
+	- (config.payToken,address(0),address(this),config.revenue,config.commissions,uint16(config.entryFeeBps),uint16(config
+.sellFeeBps),uint16(3000),uint16(7000),uint64(PRICE_MIN),uint64(KAPPA),uint64(LAMBDA),true,uint64(5e8),uint64(10e8),uin
+t64(0),uint64(130000),uint64(110000),uint64(90000),uint64(50000),uint32(300000),uint32(350000),uint32(400000),uint32(0)
+,uint256(0),uint256(0),uint256(0),uint256(0)) (contracts/FlagWarsCore_Static.sol#925-960)
+FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028) uses literals with too many digits:
+	- feeUSDC6 = 300000 (contracts/FlagWarsCore_Static.sol#1002-1004)
+FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#984-1028) uses literals with too many digits:
+	- feeUSDC6 = 400000 (contracts/FlagWarsCore_Static.sol#1015)
+FlagWarsCore_v1_5_4.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_4.sol#13-456) uses literals with
+ too many digits:
+	- PRICE_MIN = 1000000 (contracts/FlagWarsCore_v1_5_4.sol#19)
+FlagWarsCore_v1_5_4.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_4.sol#13-456) uses literals with
+ too many digits:
+	- ATTACK_FEE_BAND_1 = 300000 (contracts/FlagWarsCore_v1_5_4.sol#25)
+FlagWarsCore_v1_5_4.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_4.sol#13-456) uses literals with
+ too many digits:
+	- ATTACK_FEE_BAND_3 = 400000 (contracts/FlagWarsCore_v1_5_4.sol#27)
+FlagWarsCore_v1_5_4.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_4.sol#13-456) uses literals with
+ too many digits:
+	- BAND_1_THRESHOLD = 1000000000 (contracts/FlagWarsCore_v1_5_4.sol#37)
+FlagWarsCore_v1_5_4.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_4.sol#13-456) uses literals with
+ too many digits:
+	- BAND_2_THRESHOLD = 2000000000 (contracts/FlagWarsCore_v1_5_4.sol#38)
+FlagWarsCore_v1_5_4.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_4.sol#13-456) uses literals with
+ too many digits:
+	- BAND_3_THRESHOLD = 3000000000 (contracts/FlagWarsCore_v1_5_4.sol#39)
+FlagWarsCore_v1_5_5_AntiDump.attack(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#366-407) uses literals
+ with too many digits:
+	- a.price >= 2000000 (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#377)
+FlagWarsCore_v1_5_5_AntiDump.attack(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#366-407) uses literals
+ with too many digits:
+	- delta = 100000 (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#378)
+FlagWarsCore_v1_5_5_AntiDump.attack(uint256,uint256) (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#366-407) uses literals
+ with too many digits:
+	- a.price >= 1500000 (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#380)
+FlagWarsCore_v1_5_5_AntiDump.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#14-476) 
+uses literals with too many digits:
+	- PRICE_MIN = 1000000 (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#20)
+FlagWarsCore_v1_5_5_AntiDump.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#14-476) 
+uses literals with too many digits:
+	- ATTACK_FEE_BAND_1 = 300000 (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#43)
+FlagWarsCore_v1_5_5_AntiDump.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#14-476) 
+uses literals with too many digits:
+	- ATTACK_FEE_BAND_3 = 400000 (contracts/FlagWarsCore_v1_5_5_AntiDump.sol#45)
+FlagWarsCore_v1_5_6_WhiteFlag.attack(uint256,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#435-479) uses litera
+ls with too many digits:
+	- a.price >= 2000000 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#449)
+FlagWarsCore_v1_5_6_WhiteFlag.attack(uint256,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#435-479) uses litera
+ls with too many digits:
+	- delta = 100000 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#450)
+FlagWarsCore_v1_5_6_WhiteFlag.attack(uint256,uint256) (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#435-479) uses litera
+ls with too many digits:
+	- a.price >= 1500000 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#452)
+FlagWarsCore_v1_5_6_WhiteFlag.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#14-652
+) uses literals with too many digits:
+	- PRICE_MIN = 1000000 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#20)
+FlagWarsCore_v1_5_6_WhiteFlag.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#14-652
+) uses literals with too many digits:
+	- ATTACK_FEE_BAND_1 = 300000 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#50)
+FlagWarsCore_v1_5_6_WhiteFlag.slitherConstructorConstantVariables() (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#14-652
+) uses literals with too many digits:
+	- ATTACK_FEE_BAND_3 = 400000 (contracts/FlagWarsCore_v1_5_6_WhiteFlag.sol#52)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#too-many-digits
+INFO:Detectors:
+FlagWarsCore._calculateAttackFee(uint256) (contracts/FlagWarsCore_Static.sol#553-568) uses literals with too many digit
+s:
+	- 300000 (contracts/FlagWarsCore_Static.sol#562)
+FlagWarsCore._calculateAttackFee(uint256) (contracts/FlagWarsCore_Static.sol#553-568) uses literals with too many digit
+s:
+	- 400000 (contracts/FlagWarsCore_Static.sol#566)
+FlagWarsCore.getConfig() (contracts/FlagWarsCore_Static.sol#1008-1065) uses literals with too many digits:
+	- (config.payToken,address(0),address(this),config.revenue,config.commissions,uint16(config.entryFeeBps),uint16(config
+.sellFeeBps),uint16(3000),uint16(7000),uint64(PRICE_MIN),uint64(KAPPA),uint64(LAMBDA),true,uint64(5e8),uint64(10e8),uin
+t64(0),uint64(110000),uint64(90000),uint64(70000),uint64(50000),uint32(300000),uint32(350000),uint32(400000),uint32(0),
+uint256(0),uint256(0),uint256(0),uint256(0)) (contracts/FlagWarsCore_Static.sol#1038-1064)
+FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110) uses literals with too many digits:
+	- feeUSDC6 = 300000 (contracts/FlagWarsCore_Static.sol#1095)
+FlagWarsCore.getCurrentTier(uint256) (contracts/FlagWarsCore_Static.sol#1076-1110) uses literals with too many digits:
+	- feeUSDC6 = 400000 (contracts/FlagWarsCore_Static.sol#1101)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#too-many-digits
+INFO:Detectors:
+EIP712._nameFallback (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#52) should be constant 
+EIP712._versionFallback (node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol#53) should be constant 
+ERC20Permit._PERMIT_TYPEHASH_DEPRECATED_SLOT (node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.s
+ol#37) should be constant 
+FlagWarsCore.nextCountryId (contracts/FlagWarsCore_Static.sol#106-108) should be constant 
+FlagWarsCore_Production.freeAttackLimit (contracts/FlagWarsCore_Production.sol#94) should be constant 
+MockUSDC._decimals (contracts/mocks/MockUSDC.sol#11) should be constant 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#state-variables-that-could-be-declared-constan
+t
+INFO:Slither:. analyzed (50 contracts with 100 detectors), 232 result(s) found

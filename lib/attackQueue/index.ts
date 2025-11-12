@@ -6,8 +6,8 @@ export type AttackJob = {
   user: `0x${string}`
   fromId: number
   toId: number
-  amountToken18: bigint
   idempotencyKey: string
+  // amountToken18 removed - attacks are now fixed single attacks
 }
 
 export async function enqueueAttackJob (job: AttackJob) {

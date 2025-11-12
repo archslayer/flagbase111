@@ -1,28 +1,41 @@
 // Admin authentication and authorization
 import { NextRequest } from "next/server";
+import { getAddress } from 'viem'
 
-// Mock admin addresses - replace with real admin list
-const ADMIN_ADDRESSES = [
-  '0xc32e33f743cf7f95d90d1392771632ff1640de16',
-  '0x1234567890123456789012345678901234567890', // Mock admin
-];
+// Admin password (should be in env in production)
+const ADMIN_PASSWORD = '123789Fw.'
+
+// Admin wallet address (only this wallet can access admin panel)
+const ADMIN_WALLET = '0xc32e33f743cf7f95d90d1392771632ff1640de16'
 
 export function isAdminAddress(address: string): boolean {
   if (!address) return false;
   
   const normalizedAddress = address.toLowerCase();
-  return ADMIN_ADDRESSES.includes(normalizedAddress);
+  return normalizedAddress === ADMIN_WALLET.toLowerCase();
 }
 
-export function requireAdmin(request: NextRequest): { isAdmin: boolean; address?: string } {
-  // Mock: Get address from request headers or query params
+export function verifyAdminPassword(password: string): boolean {
+  return password === ADMIN_PASSWORD;
+}
+
+export function requireAdmin(request: NextRequest): { isAdmin: boolean; address?: string; error?: string } {
+  // Get address from JWT or request
   const address = request.headers.get('x-user-address') || 
-                 request.nextUrl.searchParams.get('address') ||
-                 '0x1234567890123456789012345678901234567890'; // Mock address for testing
+                 request.nextUrl.searchParams.get('address') || 
+                 null;
+  
+  if (!address) {
+    return { isAdmin: false, error: 'No wallet address provided' };
+  }
+  
+  const checksummed = getAddress(address);
+  const isAdmin = isAdminAddress(checksummed);
   
   return {
-    isAdmin: isAdminAddress(address),
-    address
+    isAdmin,
+    address: checksummed,
+    error: isAdmin ? undefined : 'Unauthorized wallet address'
   };
 }
 

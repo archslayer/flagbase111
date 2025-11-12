@@ -162,17 +162,16 @@ export async function estimateAttackFee(
     const wb1Multiplier = "10000" // No bonus
     const wb2Multiplier = "10000" // No bonus
     
-    // Get free attacks from war balance state (if available)
-    // NOTE: getWarBalanceState is not yet implemented in current contract
+    // Get free attacks from contract
     let freeAttacksUsed = 0
     let freeAttacksRemaining = 2
     try {
-      const wbState = await contractReader.getWarBalanceState(userAddress)
-      freeAttacksUsed = parseInt(wbState.wb1Count)
-      freeAttacksRemaining = Math.max(0, 2 - freeAttacksUsed)
-    } catch (wbError) {
-      // Silently ignore - function not available in current contract deployment
-      // Using default values: freeAttacksUsed = 0, freeAttacksRemaining = 2
+      const freeAttackCount = await contractReader.getFreeAttackCount(userAddress)
+      freeAttacksUsed = freeAttackCount.used
+      freeAttacksRemaining = freeAttackCount.remaining
+    } catch (freeError) {
+      // Silently ignore - using default values
+      console.log('getFreeAttackCount failed, using defaults:', freeError)
     }
     
     return {
@@ -188,6 +187,7 @@ export async function estimateAttackFee(
     /* OLD CODE - Contract-based calculation (disabled until contract is updated)
     try {
       // Try contract preview function first (using attacker's price)
+      // previewAttackFee uses attacker's country price (8 decimals), not target
       const preview = await contractReader.previewAttackFee(userAddress, attackerInfo.price.toString());
       
       // Calculate multipliers for display

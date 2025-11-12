@@ -30,19 +30,19 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     error DeadlineExceeded();
     error SlippageExceeded();
     error MinBuyNotMet();
-    error MinSellNotMet();
     error InsufficientSupply();
     error CountryAlreadyExists();
     
     // ============ IMMUTABLE SPEC CONSTANTS ============
     uint256 public constant KAPPA = 55_000;           // 0.00055 * 1e8 (8 decimals)
     uint256 public constant LAMBDA = 55_550;          // 0.0005555 * 1e8 (8 decimals)
-    uint256 public constant PRICE_MIN = 1_000_000;    // 0.01 * 1e8 (8 decimals)
+    uint256 public constant PRICE_MIN = 1;            // 0.00000001 * 1e8 (minimum tick, 8 decimals)
     uint256 public constant PRICE_PRECISION = 1e8;    // 8 decimals
     uint256 public constant BUY_FEE_BPS = 0;          // 0%
     uint256 public constant SELL_FEE_BPS = 500;       // 5%
     uint256 public constant REFERRAL_SHARE_BPS = 3000; // 30% of fees
     uint256 public constant REVENUE_SHARE_BPS = 7000;  // 70% of fees
+    uint256 public constant FREE_ATTACK_DELTA8 = 50_000; // 0.0005 in 8 decimals
     
     // Anti-dump tiers from spec
     struct AntiDumpTier {
@@ -55,7 +55,12 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     struct WarBalanceTier {
         uint256 threshold;        // attack count
         uint256 windowSec;        // time window
-        uint256 multiplierBps;    // fee multiplier
+        uint256 multiplierBps;    // delta multiplier (reduces delta)
+    }
+    
+    struct WBState {
+        uint256 windowStart;
+        uint256 attackCount;
     }
     
     // ============ STRUCTS ============
@@ -78,12 +83,12 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     }
     
     struct UserState {
-        uint256 cooldownUntil;    // Anti-dump cooldown
         uint8 freeAttacksUsed;    // Free attack counter (max 2)
-        uint256 wb1WindowStart;   // War-balance 1 window start
-        uint256 wb2WindowStart;   // War-balance 2 window start
-        uint256 wb1AttackCount;   // War-balance 1 attack count
-        uint256 wb2AttackCount;   // War-balance 2 attack count
+    }
+    
+    struct AttackItem {
+        uint256 fromId;
+        uint256 toId;
     }
     
     // ============ STATE VARIABLES ============
@@ -91,6 +96,17 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     mapping(uint256 => Country) public countries;
     mapping(uint256 => bool) public countryTouched;
     mapping(address => UserState) public userState;
+    
+    // Anti-dump: country-based cooldown
+    mapping(address => mapping(uint256 => uint256)) public userCooldownUntil; // user -> countryId -> timestamp
+    mapping(address => mapping(uint256 => uint8)) public userLastTier; // user -> countryId -> tier
+    
+    // War-balance: target country-based counters
+    mapping(uint256 => WBState) public wb1ByTarget; // countryId -> state
+    mapping(uint256 => WBState) public wb2ByTarget; // countryId -> state
+    
+    // Pull pattern for fee withdrawals (security: prevents reentrancy)
+    mapping(address => uint256) public pendingWithdrawals; // recipient -> amount
     
     uint256 public nextCountryId = 1;
     
@@ -112,6 +128,9 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     event ConfigUpdated(address indexed payToken, address indexed treasury, address indexed revenue, address commissions);
     event AntiDumpApplied(address indexed user, uint256 extraFeeUSDC6, uint256 cooldownSec);
     event WarBalanceApplied(address indexed user, uint256 tier, uint256 multiplierBps);
+    event FeeDistributed(bytes32 indexed kind, uint256 amount, address indexed to);
+    event FeeWithdrawn(address indexed to, uint256 amount);
+    event TokensDeposited(uint256 indexed countryId, uint256 amount);
     
     // ============ CONSTRUCTOR ============
     constructor(
@@ -120,9 +139,14 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
         address _revenue,
         address _commissions
     ) Ownable2Step() {
+        // Zero-address validation
+        require(_payToken != address(0), "zero addr");
+        require(_revenue != address(0), "zero addr");
+        require(_commissions != address(0), "zero addr");
+        
         config = Config({
             payToken: _payToken,
-            treasury: _treasury,
+            treasury: address(this), // Treasury is always the contract itself
             revenue: _revenue,
             commissions: _commissions,
             entryFeeBps: BUY_FEE_BPS,
@@ -174,25 +198,36 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
         // Slippage protection - user specifies maximum they're willing to pay
         if (totalCostUSDC6 > maxInUSDC6) revert SlippageExceeded();
         
-        // Fee calculation and distribution
-        uint256 netCostUSDC6 = _splitFees(totalCostUSDC6);
-        
-        // Transfer USDC from user
-        IERC20(config.payToken).safeTransferFrom(msg.sender, address(this), totalCostUSDC6);
-        
-        // Transfer net USDC to treasury (critical fix)
-        IERC20(config.payToken).safeTransfer(config.treasury, netCostUSDC6);
-        
         // Check supply availability
         if (c.totalSupply < amountToken18) revert InsufficientSupply();
         
-        // Effects - Update state
+        // CHECKS: Collect payment first (CEI pattern)
+        IERC20(config.payToken).safeTransferFrom(msg.sender, address(this), totalCostUSDC6);
+        
+        // EFFECTS: Update state (before external interactions)
         c.price = max(PRICE_MIN, c.price + (KAPPA * amountToken18) / 1e18);
-        c.totalSupply -= amountToken18; // Arz azalır (treasury rezervinden kullanıcıya gider)
+        c.totalSupply -= amountToken18; // Arz azalır (contract rezervinden kullanıcıya gider)
         countryTouched[countryId] = true;
         
-        // Interactions - Transfer tokens to user (from treasury reserve)
-        IERC20(c.token).safeTransferFrom(config.treasury, msg.sender, amountToken18);
+        // Fee calculation and accrual (pull pattern - accumulate, don't transfer immediately)
+        uint256 totalFee = (totalCostUSDC6 * config.entryFeeBps) / 10000;
+        if (totalFee > 0) {
+            uint256 referralFee = (totalFee * REFERRAL_SHARE_BPS) / 10000;
+            uint256 revenueFee = totalFee - referralFee;
+            
+            if (referralFee > 0) {
+                pendingWithdrawals[config.commissions] += referralFee;
+                emit FeeDistributed(bytes32("buy_referral"), referralFee, config.commissions);
+            }
+            if (revenueFee > 0) {
+                pendingWithdrawals[config.revenue] += revenueFee;
+                emit FeeDistributed(bytes32("buy_revenue"), revenueFee, config.revenue);
+            }
+        }
+        
+        // INTERACTIONS: Transfer tokens to user (from contract reserve)
+        // Use safeTransfer (not safeTransferFrom) since tokens are owned by contract
+        IERC20(c.token).safeTransfer(msg.sender, amountToken18);
         
         emit Buy(countryId, msg.sender, amountToken18, unitPrice8, totalCostUSDC6);
     }
@@ -217,43 +252,68 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
         
         Country storage c = countries[countryId];
         if (!c.exists) revert CountryNotExists();
-        if (c.totalSupply < amountToken18) revert InsufficientSupply();
         
-        // Price calculation (8 decimals)
-        uint256 unitPrice8 = c.price - (LAMBDA / 2);
+        // Price calculation (8 decimals) - prevent underflow
+        uint256 basePrice = c.price;
+        uint256 unitPrice8 = basePrice > (LAMBDA / 2)
+            ? basePrice - (LAMBDA / 2)
+            : PRICE_MIN; // Clamp to minimum price if underflow would occur
         uint256 grossProceeds8 = (unitPrice8 * amountToken18) / 1e18;
         
         // Convert to USDC6 (8 decimals -> 6 decimals)
         uint256 grossProceedsUSDC6 = grossProceeds8 / 100;
         
-        // Apply sell fee (5%)
-        uint256 feeUSDC6 = (grossProceedsUSDC6 * SELL_FEE_BPS) / 10000;
+        // Floor price enforcement (check gross proceeds, not net)
+        uint256 minProceedsUSDC6 = (PRICE_MIN * amountToken18) / (1e18 * 100); // Convert 8->6 decimals
+        if (grossProceedsUSDC6 < minProceedsUSDC6) revert FloorPriceViolation();
+        
+        // Apply sell fee using config (configurable)
+        uint256 feeUSDC6 = (grossProceedsUSDC6 * config.sellFeeBps) / 10000;
         uint256 netProceedsUSDC6 = grossProceedsUSDC6 - feeUSDC6;
         
-        // Floor price enforcement
-        uint256 minProceedsUSDC6 = (PRICE_MIN * amountToken18) / (1e18 * 100); // Convert 8->6 decimals
-        if (netProceedsUSDC6 < minProceedsUSDC6) revert FloorPriceViolation();
+        // Anti-dump check and application (calculate final proceeds and extra fee)
+        uint256 extraFeeUSDC6;
+        uint256 finalProceedsUSDC6;
+        (finalProceedsUSDC6, extraFeeUSDC6) = _applyAntiDump(msg.sender, countryId, amountToken18, netProceedsUSDC6);
         
-        // Treasury USDC check
-        if (IERC20(config.payToken).balanceOf(config.treasury) < netProceedsUSDC6) {
+        // Contract USDC balance check AFTER anti-dump (check final amount to be paid)
+        if (IERC20(config.payToken).balanceOf(address(this)) < finalProceedsUSDC6) {
             revert InsufficientTreasuryUSDC();
         }
-        
-        // Anti-dump check and application
-        uint256 finalProceedsUSDC6 = _applyAntiDump(msg.sender, amountToken18, netProceedsUSDC6);
         
         // Slippage protection
         if (finalProceedsUSDC6 < minOutUSDC6) revert SlippageExceeded();
         
-        // Transfer tokens from user to treasury
-        IERC20(c.token).safeTransferFrom(msg.sender, config.treasury, amountToken18);
+        // CHECKS: Collect tokens from user first
+        IERC20(c.token).safeTransferFrom(msg.sender, address(this), amountToken18);
         
-        // Effects - Update state
+        // EFFECTS: Update state (before external interactions)
         c.price = max(PRICE_MIN, c.price - (LAMBDA * amountToken18) / 1e18);
-        c.totalSupply += amountToken18; // Arz artar (kullanıcıdan treasury'ye gider)
+        c.totalSupply += amountToken18; // Arz artar (kullanıcıdan contract'a gider)
         countryTouched[countryId] = true;
         
-        // Interactions - Transfer USDC to user
+        // Accrue fees using pull pattern (don't transfer immediately)
+        if (feeUSDC6 > 0) {
+            uint256 referralFee = (feeUSDC6 * REFERRAL_SHARE_BPS) / 10000;
+            uint256 revenueFee = feeUSDC6 - referralFee;
+            
+            if (referralFee > 0) {
+                pendingWithdrawals[config.commissions] += referralFee;
+                emit FeeDistributed(bytes32("sell_referral"), referralFee, config.commissions);
+            }
+            if (revenueFee > 0) {
+                pendingWithdrawals[config.revenue] += revenueFee;
+                emit FeeDistributed(bytes32("sell_revenue"), revenueFee, config.revenue);
+            }
+        }
+        
+        // Accrue anti-dump extra fee (pull pattern)
+        if (extraFeeUSDC6 > 0) {
+            pendingWithdrawals[config.revenue] += extraFeeUSDC6;
+            emit FeeDistributed(bytes32("anti_dump"), extraFeeUSDC6, config.revenue);
+        }
+        
+        // INTERACTIONS: Transfer USDC from contract to user (after state updates)
         IERC20(config.payToken).safeTransfer(msg.sender, finalProceedsUSDC6);
         
         emit Sell(countryId, msg.sender, amountToken18, unitPrice8, finalProceedsUSDC6);
@@ -263,200 +323,400 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     /**
      * @dev Launch attack between countries
      * @param fromId Source country ID
-     * @param toId Target country ID  
-     * @param amountToken18 Attack amount (18 decimals)
+     * @param toId Target country ID
+     * @notice Each attack is a fixed single attack. No amount parameter.
+     * @notice Attacker must own at least 1 token of their country to prevent abuse.
      */
     function attack(
         uint256 fromId,
-        uint256 toId,
-        uint256 amountToken18
+        uint256 toId
     ) external nonReentrant whenNotPaused {
-        // Checks
-        if (amountToken18 == 0) revert InvalidAmount();
-        
         Country storage fromCountry = countries[fromId];
         Country storage toCountry = countries[toId];
         
-        if (!fromCountry.exists) revert CountryNotExists();
-        if (!toCountry.exists) revert CountryNotExists();
+        if (!fromCountry.exists || !toCountry.exists) revert CountryNotExists();
         
-        // Calculate attack fee based on attacker's country price (tiers from spec)
-        uint256 attackFeeUSDC6 = _calculateAttackFee(fromCountry.price);
+        // Prevent self-attack
+        if (fromId == toId) revert InvalidAmount();
         
-        // Apply war-balance multipliers
-        uint256 finalFeeUSDC6 = _applyWarBalance(msg.sender, attackFeeUSDC6);
+        // 1) Ensure attacker owns at least 1 token of their country
+        uint256 bal = IERC20(fromCountry.token).balanceOf(msg.sender);
+        if (bal < 1e18) revert InvalidAmount();
         
-        // Check if free attack available
-        UserState storage user = userState[msg.sender];
-        if (user.freeAttacksUsed < 2) {
-            finalFeeUSDC6 = 0;
-            user.freeAttacksUsed++;
-            emit FreeAttackUsed(msg.sender, fromId, toId, user.freeAttacksUsed, block.timestamp);
+        // 2) Calculate tier-based base fee + base delta
+        uint256 feeUSDC6 = _calculateAttackFee(fromCountry.price);
+        uint256 deltaPrice8 = _calculateAttackDelta(fromCountry.price);
+        
+        // 3) Free attack: fee=0 and delta=0.0005
+        UserState storage u = userState[msg.sender];
+        bool isFree = u.freeAttacksUsed < 2;
+        if (isFree) {
+            feeUSDC6 = 0;
+            deltaPrice8 = FREE_ATTACK_DELTA8; // 0.0005 fixed for free attacks
+            u.freeAttacksUsed++;
+            emit FreeAttackUsed(msg.sender, fromId, toId, u.freeAttacksUsed, block.timestamp);
         }
         
-        // Transfer attack fee (if not free)
-        if (finalFeeUSDC6 > 0) {
-            IERC20(config.payToken).safeTransferFrom(msg.sender, config.treasury, finalFeeUSDC6);
+        // 4) Apply war-balance delta reduction (target country-based)
+        deltaPrice8 = _applyDeltaWithWarBalance(toId, deltaPrice8);
+        
+        // CHECKS: Collect fee (if not free) - from user to contract
+        if (feeUSDC6 > 0) {
+            IERC20(config.payToken).safeTransferFrom(msg.sender, address(this), feeUSDC6);
         }
         
-        // Calculate price delta
-        uint256 deltaPrice8 = (KAPPA * amountToken18) / 1e18;
-        
-        // Effects - Update state
+        // EFFECTS: Update state (before external interactions)
         fromCountry.price = max(PRICE_MIN, fromCountry.price + deltaPrice8);
         toCountry.price = max(PRICE_MIN, toCountry.price - deltaPrice8);
         fromCountry.attacks++;
         toCountry.attacks++;
         
-        // Update war-balance counters
-        _updateWarBalanceCounters(msg.sender);
+        // Accrue fee using pull pattern (don't transfer immediately)
+        if (feeUSDC6 > 0) {
+            pendingWithdrawals[config.revenue] += feeUSDC6;
+            emit FeeDistributed(bytes32("attack"), feeUSDC6, config.revenue);
+        }
         
-        emit Attack(fromId, toId, msg.sender, finalFeeUSDC6, deltaPrice8);
+        emit Attack(fromId, toId, msg.sender, feeUSDC6, deltaPrice8);
+    }
+    
+    /**
+     * @dev Batch attack - execute multiple attacks in one transaction
+     * @param items Array of attack items (fromId, toId)
+     * @notice Each attack applies tier-based fee and delta
+     * @notice Total fee = baseFee * 5, total delta = baseDelta * 5
+     */
+    function attackBatch(
+        AttackItem[] calldata items
+    ) external nonReentrant whenNotPaused {
+        if (items.length != 5) revert InvalidAmount(); // Only 5x batch allowed
+        
+        // CHECKS: Validate all items first (no external calls in loop)
+        for (uint256 i = 0; i < items.length; i++) {
+            uint256 fromId = items[i].fromId;
+            uint256 toId = items[i].toId;
+            
+            // Prevent self-attack
+            if (fromId == toId) revert InvalidAmount();
+            
+            Country storage fromCountry = countries[fromId];
+            Country storage toCountry = countries[toId];
+            
+            if (!fromCountry.exists || !toCountry.exists) revert CountryNotExists();
+        }
+        
+        // CHECKS: Validate token ownership for all unique fromIds (batch check, no loop)
+        // Collect unique fromIds first
+        uint256[] memory uniqueFromIds = new uint256[](items.length);
+        uint256 uniqueCount = 0;
+        for (uint256 i = 0; i < items.length; i++) {
+            uint256 fromId = items[i].fromId;
+            bool found = false;
+            for (uint256 j = 0; j < uniqueCount; j++) {
+                if (uniqueFromIds[j] == fromId) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                uniqueFromIds[uniqueCount] = fromId;
+                uniqueCount++;
+            }
+        }
+        
+        // Validate token ownership for all unique fromIds (external calls, but outside main loop)
+        for (uint256 i = 0; i < uniqueCount; i++) {
+            Country storage fromCountry = countries[uniqueFromIds[i]];
+            uint256 bal = IERC20(fromCountry.token).balanceOf(msg.sender);
+            if (bal < 1e18) revert InvalidAmount();
+        }
+        
+        // CHECKS: Precompute fees and deltas for all items (ensures consistency)
+        // NOTE: Batch attacks never use free attacks - free attacks are only for single attack() calls
+        uint256[] memory itemFee = new uint256[](items.length);
+        uint256[] memory itemDelta = new uint256[](items.length);
+        
+        // Precompute: calculate fee and delta for each item (always paid attacks)
+        for (uint256 i = 0; i < items.length; i++) {
+            Country storage fromCountry = countries[items[i].fromId];
+            itemFee[i] = _calculateAttackFee(fromCountry.price);
+            itemDelta[i] = _calculateAttackDelta(fromCountry.price);
+        }
+        
+        // CHECKS: Calculate total fee and collect from user (single external call)
+        uint256 totalFeeUSDC6 = 0;
+        for (uint256 i = 0; i < items.length; i++) {
+            totalFeeUSDC6 += itemFee[i];
+        }
+        
+        if (totalFeeUSDC6 > 0) {
+            IERC20(config.payToken).safeTransferFrom(msg.sender, address(this), totalFeeUSDC6);
+        }
+        
+        // EFFECTS: Apply all state changes using precomputed values
+        for (uint256 i = 0; i < items.length; i++) {
+            uint256 fromId = items[i].fromId;
+            uint256 toId = items[i].toId;
+            
+            Country storage fromCountry = countries[fromId];
+            Country storage toCountry = countries[toId];
+            
+            // Apply war-balance delta reduction per target (updates state)
+            uint256 finalDeltaPrice8 = _applyDeltaWithWarBalance(toId, itemDelta[i]);
+            
+            // Apply delta to prices
+            fromCountry.price = max(PRICE_MIN, fromCountry.price + finalDeltaPrice8);
+            toCountry.price = max(PRICE_MIN, toCountry.price - finalDeltaPrice8);
+            fromCountry.attacks++;
+            toCountry.attacks++;
+            
+            // Emit individual attack event with precomputed fee and final delta
+            emit Attack(fromId, toId, msg.sender, itemFee[i], finalDeltaPrice8);
+        }
+        
+        // Accrue fee using pull pattern (don't transfer immediately)
+        if (totalFeeUSDC6 > 0) {
+            pendingWithdrawals[config.revenue] += totalFeeUSDC6;
+            emit FeeDistributed(bytes32("attack_batch"), totalFeeUSDC6, config.revenue);
+        }
     }
     
     // ============ INTERNAL FUNCTIONS ============
     
     /**
-     * @dev Split fees according to spec
+     * @dev Split fees according to spec (DEPRECATED - fees now accrued via pull pattern)
      * @param grossUSDC6 Gross amount in USDC6
      * @return netUSDC6 Net amount after fees
+     * @notice This function is kept for compatibility but fees are now handled via pull pattern
      */
     function _splitFees(uint256 grossUSDC6) internal returns (uint256 netUSDC6) {
-        uint256 totalFee = (grossUSDC6 * BUY_FEE_BPS) / 10000;
-        
-        if (totalFee > 0) {
-            uint256 referralFee = (totalFee * REFERRAL_SHARE_BPS) / 10000;
-            uint256 revenueFee = totalFee - referralFee;
-            
-            if (referralFee > 0) {
-                IERC20(config.payToken).safeTransfer(config.commissions, referralFee);
-            }
-            if (revenueFee > 0) {
-                IERC20(config.payToken).safeTransfer(config.revenue, revenueFee);
-            }
-        }
-        
+        // Fees are now handled in buy() function using pull pattern
+        // This function is deprecated but kept for compatibility
+        uint256 totalFee = (grossUSDC6 * config.entryFeeBps) / 10000;
         return grossUSDC6 - totalFee;
     }
     
     /**
-     * @dev Apply anti-dump protection
+     * @dev Apply anti-dump protection (country-based cooldown, reserve-based percentage)
      * @param user User address
+     * @param countryId Country ID
      * @param amountToken18 Amount being sold
      * @param baseProceedsUSDC6 Base proceeds before anti-dump
      * @return finalProceedsUSDC6 Final proceeds after anti-dump
+     * @return extraFeeUSDC6 Extra fee to be transferred to revenue (caller handles transfer)
      */
     function _applyAntiDump(
         address user, 
+        uint256 countryId,
         uint256 amountToken18, 
         uint256 baseProceedsUSDC6
-    ) internal returns (uint256 finalProceedsUSDC6) {
-        UserState storage userState_ = userState[user];
+    ) internal returns (uint256 finalProceedsUSDC6, uint256 extraFeeUSDC6) {
+        Country storage c = countries[countryId];
         
-        // Check cooldown
-        if (userState_.cooldownUntil > block.timestamp) {
-            revert SellCooldown(userState_.cooldownUntil);
+        // Cooldown is country-based
+        if (userCooldownUntil[user][countryId] > block.timestamp) {
+            revert SellCooldown(userCooldownUntil[user][countryId]);
         }
         
-        // Calculate user's token balance percentage
-        // For now, assume 10% threshold for tier 0
-        uint256 tier = 0; // Simplified - would need actual balance calculation
+        // Percent of reserve (contract reserve = c.totalSupply)
+        uint256 reserve = c.totalSupply;
+        uint256 sellPctBps = reserve > 0 ? (amountToken18 * 10000) / reserve : 10000;
         
-        AntiDumpTier memory antiDumpTier = antiDumpTiers[tier];
+        // Pick tier - only apply anti-dump if threshold is met
+        bool matched = false;
+        uint256 tier = 0;
+        for (uint256 i = antiDumpTiers.length; i > 0; i--) {
+            if (sellPctBps >= antiDumpTiers[i - 1].thresholdPctBps) {
+                tier = i - 1;
+                matched = true;
+                break;
+            }
+        }
         
-        // Apply extra fee
-        uint256 extraFeeUSDC6 = (baseProceedsUSDC6 * antiDumpTier.extraFeeBps) / 10000;
+        // If no threshold matched, no anti-dump applies (no extra fee, no cooldown)
+        if (!matched) {
+            return (baseProceedsUSDC6, 0);
+        }
+        
+        AntiDumpTier memory t = antiDumpTiers[tier];
+        
+        // Calculate extra fee (caller will transfer it)
+        extraFeeUSDC6 = (baseProceedsUSDC6 * t.extraFeeBps) / 10000;
         finalProceedsUSDC6 = baseProceedsUSDC6 - extraFeeUSDC6;
         
-        // Set cooldown
-        userState_.cooldownUntil = block.timestamp + antiDumpTier.cooldownSec;
+        // Update cooldown and tier (state changes)
+        userCooldownUntil[user][countryId] = block.timestamp + t.cooldownSec;
+        userLastTier[user][countryId] = uint8(tier);
         
-        emit AntiDumpApplied(user, extraFeeUSDC6, antiDumpTier.cooldownSec);
+        emit AntiDumpApplied(user, extraFeeUSDC6, t.cooldownSec);
         
-        return finalProceedsUSDC6;
+        return (finalProceedsUSDC6, extraFeeUSDC6);
     }
     
     /**
-     * @dev Calculate attack fee based on price tiers
+     * @dev Calculate attack fee based on price tiers (from spec)
      * @param attackerPrice8 Attacker country price (8 decimals)
      * @return feeUSDC6 Attack fee in USDC6
      */
     function _calculateAttackFee(uint256 attackerPrice8) internal pure returns (uint256 feeUSDC6) {
-        // Convert attacker's price to USDC6 for comparison
+        // Convert attacker's price from 8 decimals to USDC6 for comparison
         uint256 attackerPriceUSDC6 = attackerPrice8 / 100;
         
-        if (attackerPriceUSDC6 <= 5e6) return 300000;      // 0.30 USDC6 (≤ 5.00 USDC)
-        if (attackerPriceUSDC6 <= 10e6) return 350000;     // 0.35 USDC6 (5.000001 - 10.00 USDC)
-        return 400000;                                     // 0.40 USDC6 (10.000001+ USDC)
+        // Spec tiers (3 tiers only):
+        // Tier 1: ≤ 5.00 USDC -> 0.30 USDC fee
+        // Tier 2: > 5.00 and < 10.00 USDC -> 0.35 USDC fee
+        // Tier 3: ≥ 10.00 USDC -> 0.40 USDC fee
+        if (attackerPriceUSDC6 <= 5e6) {
+            return 300000;      // 0.30 USDC6 (≤ 5.00 USDC)
+        } else if (attackerPriceUSDC6 < 10e6) {
+            return 350000;      // 0.35 USDC6 (> 5.00 and < 10.00 USDC)
+        } else {
+            return 400000;      // 0.40 USDC6 (≥ 10.00 USDC)
+        }
     }
     
     /**
-     * @dev Apply war-balance multipliers
+     * @dev Calculate attack delta based on price tiers (from spec)
+     * @param attackerPrice8 Attacker country price (8 decimals)
+     * @return delta8 Attack delta in 8 decimals
+     * @notice Spec: T1 (≤5.00) → 0.0011, T2 (>5.00 and <10.00) → 0.0009, T3 (≥10.00) → 0.0007
+     */
+    function _calculateAttackDelta(uint256 attackerPrice8) internal pure returns (uint256 delta8) {
+        uint256 p6 = attackerPrice8 / 100; // Convert to USDC6
+        if (p6 <= 5e6) return 110_000;      // T1: ≤ 5.00 → 0.0011 (110_000)
+        if (p6 < 10e6) return 90_000;       // T2: > 5.00 and < 10.00 → 0.0009 (90_000)
+        return 70_000;                      // T3: ≥ 10.00 → 0.0007 (70_000)
+    }
+    
+    /**
+     * @dev Apply war-balance delta reduction (target country-based)
+     * @param toId Target country ID
+     * @param baseDelta8 Base delta (8 decimals)
+     * @return delta8 Final delta with war-balance multiplier applied
+     */
+    function _applyDeltaWithWarBalance(uint256 toId, uint256 baseDelta8) internal returns (uint256 delta8) {
+        // Update windows
+        WBState storage s1 = wb1ByTarget[toId];
+        WBState storage s2 = wb2ByTarget[toId];
+        
+        // Roll window 1
+        if (block.timestamp - s1.windowStart > wb1Tier.windowSec) {
+            s1.windowStart = block.timestamp;
+            s1.attackCount = 1;
+        } else {
+            s1.attackCount++;
+        }
+        
+        // Roll window 2
+        if (block.timestamp - s2.windowStart > wb2Tier.windowSec) {
+            s2.windowStart = block.timestamp;
+            s2.attackCount = 1;
+        } else {
+            s2.attackCount++;
+        }
+        
+        // Pick multiplier bps that REDUCES delta (spec: 0.60 and 0.80)
+        uint256 mulBps = 10000;
+        uint256 appliedTier = 0;
+        if (s2.attackCount >= wb2Tier.threshold) {
+            mulBps = 8000;   // x0.80
+            appliedTier = 2;
+        } else if (s1.attackCount >= wb1Tier.threshold) {
+            mulBps = 6000;   // x0.60
+            appliedTier = 1;
+        }
+        
+        // Emit war-balance event if multiplier is applied
+        if (appliedTier > 0) {
+            emit WarBalanceApplied(msg.sender, appliedTier, mulBps);
+        }
+        
+        return (baseDelta8 * mulBps) / 10000;
+    }
+    
+    /**
+     * @dev Apply war-balance multipliers (DEPRECATED - kept for compatibility, not used)
      * @param user User address
      * @param baseFeeUSDC6 Base fee
      * @return finalFeeUSDC6 Final fee with multiplier
      */
     function _applyWarBalance(address user, uint256 baseFeeUSDC6) internal returns (uint256 finalFeeUSDC6) {
-        UserState storage userState_ = userState[user];
-        uint256 finalFee = baseFeeUSDC6;
-        uint256 appliedTier = 0;
-        uint256 appliedMul = 0;
-
-        // Check WB2 first (higher threshold, higher multiplier)
-        if (userState_.wb2AttackCount >= wb2Tier.threshold) {
-            uint256 multiplier = (baseFeeUSDC6 * wb2Tier.multiplierBps) / 10000;
-            finalFee = baseFeeUSDC6 + multiplier;
-            appliedTier = 2;
-            appliedMul = wb2Tier.multiplierBps;
-        } else if (userState_.wb1AttackCount >= wb1Tier.threshold) {
-            uint256 multiplier = (baseFeeUSDC6 * wb1Tier.multiplierBps) / 10000;
-            finalFee = baseFeeUSDC6 + multiplier;
-            appliedTier = 1;
-            appliedMul = wb1Tier.multiplierBps;
-        }
-
-        if (appliedTier != 0) {
-            emit WarBalanceApplied(user, appliedTier, appliedMul);
-        }
-        
-        return finalFee;
+        // This function is deprecated - war-balance now affects delta, not fee
+        return baseFeeUSDC6;
     }
     
     /**
-     * @dev Update war-balance counters
+     * @dev Update war-balance counters (DEPRECATED - kept for compatibility, not used)
      * @param user User address
      */
     function _updateWarBalanceCounters(address user) internal {
-        UserState storage userState_ = userState[user];
-        
-        // Update WB1 counter (5min window)
-        if (block.timestamp - userState_.wb1WindowStart > wb1Tier.windowSec) {
-            userState_.wb1WindowStart = block.timestamp;
-            userState_.wb1AttackCount = 1;
-        } else {
-            userState_.wb1AttackCount++;
-        }
-        
-        // Update WB2 counter (1h window)
-        if (block.timestamp - userState_.wb2WindowStart > wb2Tier.windowSec) {
-            userState_.wb2WindowStart = block.timestamp;
-            userState_.wb2AttackCount = 1;
-        } else {
-            userState_.wb2AttackCount++;
-        }
+        // This function is deprecated - war-balance is now target country-based
     }
     
     /**
-     * @dev Get war balance state for a user
-     * @param user User address
-     * @return wb1Count WB1 attack count
+     * @dev Get war balance state for a target country
+     * @param countryId Target country ID
+     * @return wb1Count WB1 attack count for this target
      * @return wb1Threshold WB1 threshold
-     * @return wb1RemainSec WB1 remaining seconds
-     * @return wb2Count WB2 attack count
+     * @return wb1RemainSec WB1 remaining seconds in window
+     * @return wb2Count WB2 attack count for this target
      * @return wb2Threshold WB2 threshold
-     * @return wb2RemainSec WB2 remaining seconds
+     * @return wb2RemainSec WB2 remaining seconds in window
+     * @return currentDeltaMultiplierBps Current delta multiplier (reduces delta)
+     */
+    function getWarBalanceStateByTarget(uint256 countryId) external view returns (
+        uint256 wb1Count,
+        uint256 wb1Threshold,
+        uint256 wb1RemainSec,
+        uint256 wb2Count,
+        uint256 wb2Threshold,
+        uint256 wb2RemainSec,
+        uint256 currentDeltaMultiplierBps
+    ) {
+        WBState memory s1 = wb1ByTarget[countryId];
+        WBState memory s2 = wb2ByTarget[countryId];
+        
+        uint256 wb1Remain = 0;
+        if (s1.windowStart > 0 && block.timestamp - s1.windowStart < wb1Tier.windowSec) {
+            wb1Remain = wb1Tier.windowSec - (block.timestamp - s1.windowStart);
+        }
+        
+        uint256 wb2Remain = 0;
+        if (s2.windowStart > 0 && block.timestamp - s2.windowStart < wb2Tier.windowSec) {
+            wb2Remain = wb2Tier.windowSec - (block.timestamp - s2.windowStart);
+        }
+        
+        // Calculate current multiplier (reduces delta)
+        uint256 mulBps = 10000;
+        if (s2.attackCount >= wb2Tier.threshold) {
+            mulBps = 8000;   // x0.80
+        } else if (s1.attackCount >= wb1Tier.threshold) {
+            mulBps = 6000;   // x0.60
+        }
+        
+        return (
+            s1.attackCount,
+            wb1Tier.threshold,
+            wb1Remain,
+            s2.attackCount,
+            wb2Tier.threshold,
+            wb2Remain,
+            mulBps
+        );
+    }
+    
+    /**
+     * @dev Get war balance state for a user (DEPRECATED - kept for compatibility)
+     * @notice War-balance is now target country-based, not user-based
+     * @param user User address (not used)
+     * @return wb1Count Always 0
+     * @return wb1Threshold WB1 threshold
+     * @return wb1RemainSec Always 0
+     * @return wb2Count Always 0
+     * @return wb2Threshold WB2 threshold
+     * @return wb2RemainSec Always 0
      * @return freeAttacksUsed Free attacks used
-     * @return freeAttacksMax Maximum free attacks
+     * @return freeAttacksMax Maximum free attacks (always 2)
      */
     function getWarBalanceState(address user) external view returns (
         uint256 wb1Count,
@@ -468,33 +728,28 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
         uint8 freeAttacksUsed,
         uint8 freeAttacksMax
     ) {
-        UserState storage s = userState[user];
-        uint256 nowTs = block.timestamp;
+        UserState memory s = userState[user];
         
-        // Calculate remaining time for windows
-        uint256 wb1Remain = (nowTs > s.wb1WindowStart + wb1Tier.windowSec) ? 0 : (s.wb1WindowStart + wb1Tier.windowSec - nowTs);
-        uint256 wb2Remain = (nowTs > s.wb2WindowStart + wb2Tier.windowSec) ? 0 : (s.wb2WindowStart + wb2Tier.windowSec - nowTs);
-
         return (
-            s.wb1AttackCount,
+            0,                      // wb1Count: deprecated
             wb1Tier.threshold,
-            wb1Remain,
-            s.wb2AttackCount,
+            0,                      // wb1RemainSec: deprecated
+            0,                      // wb2Count: deprecated
             wb2Tier.threshold,
-            wb2Remain,
+            0,                      // wb2RemainSec: deprecated
             s.freeAttacksUsed,
             2
         );
     }
 
     /**
-     * @dev Preview attack fee with war balance and free attack
+     * @dev Preview attack fee (war-balance no longer affects fee, only delta)
      * @param user User address
      * @param attackerPrice8 Attacker country price (8 decimals)
      * @return baseFeeUSDC6 Base fee
-     * @return appliedTier Applied tier (0, 1, 2)
-     * @return appliedMulBps Applied multiplier BPS
-     * @return finalFeeUSDC6 Final fee
+     * @return appliedTier Always 0 (war-balance affects delta, not fee)
+     * @return appliedMulBps Always 0 (war-balance affects delta, not fee)
+     * @return finalFeeUSDC6 Final fee (0 if free attack available)
      * @return isFreeAttackAvailable Free attack available
      */
     function previewAttackFee(address user, uint256 attackerPrice8) external view returns (
@@ -505,24 +760,11 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
         bool isFreeAttackAvailable
     ) {
         uint256 baseFee = _calculateAttackFee(attackerPrice8);
-        UserState storage s = userState[user];
-        uint256 tier = 0;
-        uint256 mul = 0;
-
-        // Check which WB tier applies (highest priority)
-        if (s.wb2AttackCount >= wb2Tier.threshold) {
-            tier = 2;
-            mul = wb2Tier.multiplierBps;
-        } else if (s.wb1AttackCount >= wb1Tier.threshold) {
-            tier = 1;
-            mul = wb1Tier.multiplierBps;
-        }
-
-        uint256 withWB = (tier == 0) ? baseFee : (baseFee + (baseFee * mul) / 10000);
+        UserState memory s = userState[user];
         bool freeAvail = (s.freeAttacksUsed < 2);
-        uint256 finalFee = freeAvail ? 0 : withWB;
+        uint256 finalFee = freeAvail ? 0 : baseFee;
 
-        return (baseFee, tier, mul, finalFee, freeAvail);
+        return (baseFee, 0, 0, finalFee, freeAvail);
     }
 
     /**
@@ -563,17 +805,23 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     
     /**
      * @dev Get sell price for amount
+     * @notice This function returns the base sell price after sell fee, but does NOT include anti-dump extra fees
+     * @notice For accurate net proceeds, UI should also call getAntiDumpInfo() and subtract extraFeeUSDC6
+     * @param countryId Country ID
+     * @param amountToken18 Amount to sell (18 decimals)
+     * @return Net proceeds after sell fee (6 decimals), excluding anti-dump extra fees
      */
     function getSellPrice(uint256 countryId, uint256 amountToken18) external view returns (uint256) {
         Country memory c = countries[countryId];
         if (!c.exists) revert CountryNotExists();
         
-        uint256 unitPrice8 = c.price - (LAMBDA / 2);
+        // Prevent underflow - clamp to minimum price
+        uint256 unitPrice8 = c.price > (LAMBDA / 2) ? c.price - (LAMBDA / 2) : PRICE_MIN;
         uint256 grossProceeds8 = (unitPrice8 * amountToken18) / 1e18;
         uint256 grossProceedsUSDC6 = grossProceeds8 / 100;
         
-        // Apply sell fee
-        uint256 feeUSDC6 = (grossProceedsUSDC6 * SELL_FEE_BPS) / 10000;
+        // Apply sell fee using config (configurable)
+        uint256 feeUSDC6 = (grossProceedsUSDC6 * config.sellFeeBps) / 10000;
         return grossProceedsUSDC6 - feeUSDC6;
     }
     
@@ -581,9 +829,13 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     
     /**
      * @dev Create new country with specific ID
+     * @param countryId Country ID
+     * @param name Country name
+     * @param token ERC20 token address (must be non-zero, assumed 18 decimals)
      */
     function createCountry(uint256 countryId, string memory name, address token) external onlyOwner {
         if (countries[countryId].exists) revert CountryAlreadyExists();
+        if (token == address(0)) revert InvalidAmount(); // Zero-address check
         
         countries[countryId] = Country({
             name: name,
@@ -600,7 +852,7 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     /**
      * @dev Seed country price (owner only, one-time operation)
      */
-    function seedCountryPrice(uint256 countryId, uint256 priceUSDC6) external onlyOwner {
+    function seedCountryPrice(uint256 countryId, uint256 priceUSDC6) external onlyOwner nonReentrant {
         Country storage c = countries[countryId];
         if (!c.exists) revert CountryNotExists();
         if (c.price != 0) revert PriceAlreadySet();
@@ -613,34 +865,115 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     }
     
     /**
-     * @dev Seed country supply (owner only, one-time operation)
+     * @dev Deposit country tokens to contract reserve (owner only)
+     * @notice Required before buy() can work - tokens must be in contract
+     * @param countryId Country ID
+     * @param amount Amount to deposit (18 decimals)
      */
-    function seedCountrySupply(uint256 countryId, uint256 initialSupplyToken18) external onlyOwner {
+    function depositCountryTokens(uint256 countryId, uint256 amount) external onlyOwner nonReentrant {
+        Country storage c = countries[countryId];
+        if (!c.exists) revert CountryNotExists();
+        
+        // Transfer tokens to contract
+        IERC20(c.token).safeTransferFrom(msg.sender, address(this), amount);
+        
+        // Update totalSupply
+        c.totalSupply += amount;
+        
+        // Validate reserve balance matches or exceeds totalSupply
+        require(
+            IERC20(c.token).balanceOf(address(this)) >= c.totalSupply,
+            "reserve mismatch"
+        );
+        
+        emit TokensDeposited(countryId, amount);
+    }
+    
+    /**
+     * @dev Seed country supply (owner only, one-time operation)
+     * @notice Transfers tokens to contract and validates reserve balance
+     */
+    function seedCountrySupply(uint256 countryId, uint256 initialSupplyToken18) external onlyOwner nonReentrant {
         Country storage c = countries[countryId];
         if (!c.exists) revert CountryNotExists();
         if (c.totalSupply != 0) revert SupplyAlreadySet();
         if (countryTouched[countryId]) revert CountryAlreadyTouched();
         if (initialSupplyToken18 != 50000 * 1e18) revert InvalidSeedSupply();
         
+        // Transfer tokens to contract
+        IERC20(c.token).safeTransferFrom(msg.sender, address(this), initialSupplyToken18);
+        
+        // Update totalSupply
         c.totalSupply = initialSupplyToken18;
+        
+        // Validate reserve balance matches totalSupply
+        require(
+            IERC20(c.token).balanceOf(address(this)) >= c.totalSupply,
+            "reserve mismatch"
+        );
+        
         emit SupplySeeded(countryId, initialSupplyToken18);
     }
     
     /**
      * @dev Update configuration
+     * @notice Treasury is always set to contract address, cannot be changed
      */
     function setConfig(
         address _payToken,
         address _treasury,
         address _revenue,
         address _commissions
-    ) external onlyOwner {
+    ) external onlyOwner nonReentrant {
+        // Zero-address validation
+        require(_payToken != address(0), "zero addr");
+        require(_revenue != address(0), "zero addr");
+        require(_commissions != address(0), "zero addr");
+        
         config.payToken = _payToken;
-        config.treasury = _treasury;
+        config.treasury = address(this); // Always contract itself, ignore _treasury parameter
         config.revenue = _revenue;
         config.commissions = _commissions;
+        // entryFeeBps and sellFeeBps remain unchanged (can be updated via separate function if needed)
         
-        emit ConfigUpdated(_payToken, _treasury, _revenue, _commissions);
+        emit ConfigUpdated(_payToken, address(this), _revenue, _commissions);
+    }
+    
+    /**
+     * @dev Update fee rates
+     * @param _entryFeeBps Buy fee in basis points
+     * @param _sellFeeBps Sell fee in basis points
+     */
+    function setFees(uint256 _entryFeeBps, uint256 _sellFeeBps) external onlyOwner nonReentrant {
+        config.entryFeeBps = _entryFeeBps;
+        config.sellFeeBps = _sellFeeBps;
+    }
+    
+    /**
+     * @dev Withdraw USDC from contract (owner only)
+     * @param to Recipient address
+     * @param amount Amount to withdraw (USDC6)
+     */
+    function withdraw(address to, uint256 amount) external onlyOwner nonReentrant {
+        IERC20(config.payToken).safeTransfer(to, amount);
+    }
+    
+    /**
+     * @dev Withdraw accumulated fees (pull pattern - prevents reentrancy)
+     * @notice Recipients can withdraw their accumulated fees
+     * @notice Uses CEI pattern: checks -> effects -> interactions
+     */
+    function withdrawFees() external nonReentrant {
+        uint256 amount = pendingWithdrawals[msg.sender];
+        require(amount > 0, "no funds");
+        
+        // EFFECTS: Clear pending withdrawal before transfer
+        pendingWithdrawals[msg.sender] = 0;
+        
+        // INTERACTIONS: Transfer after state update
+        IERC20(config.payToken).safeTransfer(msg.sender, amount);
+        
+        emit FeeWithdrawn(msg.sender, amount);
     }
     
     /**
@@ -658,9 +991,11 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
     }
     
     /**
-     * @dev Emergency withdraw (only for wrong tokens)
+     * @dev Emergency withdraw (only for wrong tokens, not payToken)
+     * @notice payToken must be withdrawn using withdraw() function
      */
-    function emergencyWithdraw(address token, uint256 amount) external onlyOwner {
+    function emergencyWithdraw(address token, uint256 amount) external onlyOwner nonReentrant {
+        require(token != config.payToken, "use withdraw()");
         IERC20(token).safeTransfer(owner(), amount);
     }
     
@@ -713,7 +1048,7 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
         return (
             config.payToken,
             address(0), // feeToken not used
-            config.treasury,
+            address(this), // treasury is always contract itself
             config.revenue,
             config.commissions,
             uint16(config.entryFeeBps),
@@ -724,66 +1059,200 @@ contract FlagWarsCore is ReentrancyGuard, Ownable2Step, Pausable {
             uint64(KAPPA),
             uint64(LAMBDA),
             true, // attackFeeInUSDC
-            uint64(0), uint64(0), uint64(0), // tier prices not used
-            uint64(0), uint64(0), uint64(0), uint64(0), // deltas not used
-            uint32(0), uint32(0), uint32(0), uint32(0), // fees not used
+            uint64(5e8), // tier1Price8: 5 USDC in 8 decimals
+            uint64(10e8), // tier2Price8: 10 USDC in 8 decimals
+            uint64(0), // tier3Price8: unlimited (>10 USDC) - no upper bound
+            uint64(110000), // delta1_8: 0.0011 in 8 decimals (T1: ≤5.00)
+            uint64(90000),  // delta2_8: 0.0009 in 8 decimals (T2: >5.00 and <10.00)
+            uint64(70000),  // delta3_8: 0.0007 in 8 decimals (T3: ≥10.00)
+            uint64(50000),  // delta4_8: 0.0005 in 8 decimals (free attack)
+            uint32(300000), // fee1_USDC6: 0.30 USDC
+            uint32(350000), // fee2_USDC6: 0.35 USDC
+            uint32(400000), // fee3_USDC6: 0.40 USDC
+            uint32(0), // fee4_USDC6: 0 (free attack)
             uint256(0), uint256(0), uint256(0), uint256(0) // token fees not used
         );
     }
     
     /**
-     * @dev Get current tier for a country (mock implementation)
+     * @dev Get current tier for a country based on attack fee tiers
+     * @param countryId Country ID
+     * @return maxPrice8 Maximum price (8 decimals) - not used in current implementation
+     * @return delta8 Price delta per attack (8 decimals) - fixed per attack, based on spec tier
+     * @return attackFeeUSDC6_orETHwei Attack fee in USDC6 based on country price tier
+     * @notice Delta is fixed per attack: Tier 1 = 0.0011, Tier 2 = 0.0009, Tier 3 = 0.0007
+     * @notice Free attacks use fixed delta of 0.0005 regardless of tier
      */
     function getCurrentTier(uint256 countryId) external view returns (
-        uint256 maxPrice,
-        uint256 delta,
-        uint256 attackFee
+        uint256 maxPrice8,
+        uint256 delta8,
+        uint256 attackFeeUSDC6_orETHwei
     ) {
-        // Mock implementation - return default values
+        Country memory c = countries[countryId];
+        if (!c.exists) revert CountryNotExists();
+        
+        // Convert price from 8 decimals to USDC6 for comparison
+        uint256 priceUSDC6 = c.price / 100;
+        
+        // Determine attack fee tier based on spec (3 tiers only)
+        // Tier 1: ≤ 5.00 USDC -> 0.30 USDC fee, delta 0.0011
+        // Tier 2: > 5.00 and < 10.00 USDC -> 0.35 USDC fee, delta 0.0009  
+        // Tier 3: ≥ 10.00 USDC -> 0.40 USDC fee, delta 0.0007
+        uint256 feeUSDC6;
+        uint256 delta;
+        
+        if (priceUSDC6 <= 5e6) {
+            feeUSDC6 = 300000;      // 0.30 USDC6
+            delta = 110000;         // 0.0011 * 1e8 (8 decimals)
+        } else if (priceUSDC6 < 10e6) {
+            feeUSDC6 = 350000;      // 0.35 USDC6
+            delta = 90000;          // 0.0009 * 1e8 (8 decimals)
+        } else {
+            feeUSDC6 = 400000;      // 0.40 USDC6
+            delta = 70000;          // 0.0007 * 1e8 (8 decimals)
+        }
+        
         return (
-            1000000000000000000000, // 1000 ETH max price
-            10000000000000000000,   // 10 ETH delta
-            1000000000000000000     // 1 ETH attack fee
+            0,                      // maxPrice8: not used in current implementation (always 0)
+            delta,                  // delta8
+            feeUSDC6                // attackFeeUSDC6_orETHwei
         );
     }
     
     /**
-     * @dev Get remaining supply for a country
+     * @dev Get anti-dump information for a potential sell (reserve-based percentage)
+     * @param countryId Country ID
+     * @param amountToken18 Amount to sell (18 decimals)
+     * @return sellAmount Amount being sold (same as input)
+     * @return sellPercentage Sell percentage of reserve (basis points)
+     * @return extraFeeBps Extra fee in basis points that would be applied
+     * @return cooldown Cooldown duration in seconds that would be applied
+     * @return nextSellTime Timestamp when cooldown would end (0 if no cooldown)
+     * @return canSellNow Whether user can sell now (not in cooldown for this country)
+     */
+    function getAntiDumpInfo(uint256 countryId, uint256 amountToken18) external view returns (
+        uint256 sellAmount,
+        uint256 sellPercentage,
+        uint256 extraFeeBps,
+        uint256 cooldown,
+        uint256 nextSellTime,
+        bool canSellNow
+    ) {
+        Country memory c = countries[countryId];
+        if (!c.exists) revert CountryNotExists();
+        
+        // Percent of reserve (contract reserve = c.totalSupply)
+        uint256 reserve = c.totalSupply;
+        uint256 sellPctBps = reserve > 0 ? (amountToken18 * 10000) / reserve : 10000;
+        
+        // Pick tier - only return anti-dump info if threshold is met
+        bool matched = false;
+        uint256 tier = 0;
+        for (uint256 i = antiDumpTiers.length; i > 0; i--) {
+            if (sellPctBps >= antiDumpTiers[i - 1].thresholdPctBps) {
+                tier = i - 1;
+                matched = true;
+                break;
+            }
+        }
+        
+        // Check current cooldown status (country-based)
+        uint256 cooldownUntil = userCooldownUntil[msg.sender][countryId];
+        bool inCooldown = cooldownUntil > block.timestamp;
+        
+        // If no threshold matched, return zero fees and cooldown
+        if (!matched) {
+            return (
+                amountToken18,
+                sellPctBps,
+                0,  // No extra fee
+                0,  // No cooldown
+                inCooldown ? cooldownUntil : 0,
+                !inCooldown
+            );
+        }
+        
+        AntiDumpTier memory antiDumpTier = antiDumpTiers[tier];
+        
+        return (
+            amountToken18,
+            sellPctBps,
+            antiDumpTier.extraFeeBps,
+            antiDumpTier.cooldownSec,
+            inCooldown ? cooldownUntil : 0,
+            !inCooldown
+        );
+    }
+    
+    /**
+     * @dev Get user's cooldown information for a specific country
+     * @param user User address
+     * @param countryId Country ID
+     * @return isInCooldown Whether user is in cooldown for this country
+     * @return remainingSeconds Seconds remaining in cooldown
+     * @return lastTierApplied Last anti-dump tier that was applied (0-3, 0 = none)
+     */
+    function getUserCooldownInfo(address user, uint256 countryId) external view returns (
+        bool isInCooldown,
+        uint256 remainingSeconds,
+        uint256 lastTierApplied
+    ) {
+        uint256 cooldownUntil = userCooldownUntil[user][countryId];
+        
+        if (cooldownUntil > block.timestamp) {
+            isInCooldown = true;
+            remainingSeconds = cooldownUntil - block.timestamp;
+        } else {
+            isInCooldown = false;
+            remainingSeconds = 0;
+        }
+        
+        return (isInCooldown, remainingSeconds, userLastTier[user][countryId]);
+    }
+    
+    /**
+     * @dev Get free attack count for a user
+     * @param user User address
+     * @return used Number of free attacks used (0-2)
+     * @return maxCount Maximum free attacks allowed (always 2)
+     * @return remaining Remaining free attacks (maxCount - used)
+     */
+    function getFreeAttackCount(address user) external view returns (
+        uint8 used,
+        uint8 maxCount,
+        uint8 remaining
+    ) {
+        UserState memory s = userState[user];
+        uint8 usedCount = s.freeAttacksUsed;
+        uint8 maxAllowed = 2;
+        uint8 remainingCount = usedCount < maxAllowed ? (maxAllowed - usedCount) : 0;
+        
+        return (usedCount, maxAllowed, remainingCount);
+    }
+    
+    /**
+     * @dev Get remaining supply for a country (based on actual contract balance)
      * @param id Country ID
-     * @return remaining Remaining supply (18 decimals)
+     * @return remaining Remaining supply (18 decimals) - actual token balance in contract
      */
     function getRemainingSupply(uint256 id) external view returns (uint256 remaining) {
         Country storage c = countries[id];
         if (!c.exists) revert CountryNotExists();
         
-        return c.totalSupply;
+        // Return actual contract balance (more reliable than totalSupply)
+        return IERC20(c.token).balanceOf(address(this));
     }
     
     /**
      * @dev Get remaining supply for a country (alias for compatibility)
      * @param id Country ID
-     * @return remaining Remaining supply (18 decimals)
+     * @return remaining Remaining supply (18 decimals) - actual token balance in contract
      */
     function remainingSupply(uint256 id) external view returns (uint256 remaining) {
         Country storage c = countries[id];
         if (!c.exists) revert CountryNotExists();
         
-        return c.totalSupply;
+        // Return actual contract balance (more reliable than totalSupply)
+        return IERC20(c.token).balanceOf(address(this));
     }
-    
-    /**
-     * @dev Set initial supply for a country (owner only)
-     * @param countryId Country ID
-     * @param supply18 Initial supply (18 decimals)
-     */
-    function setInitialSupply(uint256 countryId, uint256 supply18) external onlyOwner {
-        Country storage c = countries[countryId];
-        if (!c.exists) revert CountryNotExists();
-        if (c.totalSupply != 0) revert SupplyAlreadySet();
-        
-        c.totalSupply = supply18;
-        emit SupplySet(countryId, supply18);
-    }
-    
-    event SupplySet(uint256 indexed countryId, uint256 supply18);
 }

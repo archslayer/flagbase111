@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { getRedis } from '@/lib/redis'
+import { getIndexerStatus } from '@/lib/indexer/corePricesPoller'
 
 export const runtime = 'nodejs'
 
@@ -13,6 +14,7 @@ export async function GET() {
     checks: {
       mongo: 'unknown',
       redis: 'unknown',
+      indexer: 'unknown',
     }
   }
 
@@ -36,6 +38,22 @@ export async function GET() {
   } catch (e: any) {
     info.ok = false
     info.checks.redis = `fail:${e?.message || 'err'}`
+  }
+
+  // Indexer status check
+  try {
+    const indexerStatus = getIndexerStatus()
+    info.checks.indexer = {
+      running: indexerStatus.isInitialized,
+      lastUpdate: indexerStatus.lastUpdate?.toISOString() || null,
+      countryCount: indexerStatus.countryCount,
+    }
+    if (!indexerStatus.isInitialized) {
+      info.ok = false
+    }
+  } catch (e: any) {
+    info.ok = false
+    info.checks.indexer = `fail:${e?.message || 'err'}`
   }
 
   info.latencyMs = Date.now() - startedAt

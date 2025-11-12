@@ -34,11 +34,15 @@ export const CORE_ABI = parseAbi([
   'event Bought(uint256 indexed id, address user, uint256 amount, uint256 usdcPaid, uint256 fee)',
   'event Sold(uint256 indexed id, address user, uint256 amount, uint256 usdcReceived, uint256 fee)',
   // Attack functions
-  'function attack(uint256 fromId, uint256 toId, uint256 amountToken18)',
-  'struct AttackItem { uint256 fromId; uint256 toId; uint256 amountToken18; }',
+  'function attack(uint256 fromId, uint256 toId)',
+  'struct AttackItem { uint256 fromId; uint256 toId; }',
   'function attackBatch(AttackItem[] items)',
   'function previewAttackFee(address user, uint256 attackerPrice8) view returns (uint256 baseFeeUSDC6, uint256 appliedTier, uint256 appliedMulBps, uint256 finalFeeUSDC6, bool isFreeAttackAvailable)',
-  'function getWarBalanceState(address user) view returns (uint256 wb1Count, uint256 wb1Threshold, uint256 wb1Window, uint256 wb1Multiplier, uint256 wb1MulBps, uint256 wb2Count, uint256 wb2Threshold, uint256 wb2Window, uint256 wb2Multiplier, uint256 wb2MulBps, uint256 currentMultiplier)',
+  'function getWarBalanceState(address user) view returns (uint256 wb1Count, uint256 wb1Threshold, uint256 wb1RemainSec, uint256 wb2Count, uint256 wb2Threshold, uint256 wb2RemainSec, uint8 freeAttacksUsed, uint8 freeAttacksMax)',
+  'function getAntiDumpInfo(uint256 countryId, uint256 amountToken18) view returns (uint256 sellAmount, uint256 sellPercentage, uint256 extraFeeBps, uint256 cooldown, uint256 nextSellTime, bool canSellNow)',
+  'function getUserCooldownInfo(address user, uint256 countryId) view returns (bool isInCooldown, uint256 remainingSeconds, uint256 lastTierApplied)',
+  'function getFreeAttackCount(address user) view returns (uint8 used, uint8 maxCount, uint8 remaining)',
+  'function getCurrentTier(uint256 countryId) view returns (uint256 maxPrice8, uint256 delta8, uint256 attackFeeUSDC6_orETHwei)',
   // Events
   'event Attack(uint256 indexed fromId, uint256 indexed toId, address indexed user, uint256 amount, uint256 fee)'
 ])
