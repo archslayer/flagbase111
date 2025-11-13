@@ -90,33 +90,13 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.AchievementsSBT__factory>;
     getContractFactory(
-      name: "Core",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Core__factory>;
-    getContractFactory(
       name: "FlagToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FlagToken__factory>;
     getContractFactory(
-      name: "FlagWarsCore_Production",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.FlagWarsCore_Production__factory>;
-    getContractFactory(
       name: "FlagWarsCore",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FlagWarsCore__factory>;
-    getContractFactory(
-      name: "FlagWarsCore_v1_5_4",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.FlagWarsCore_v1_5_4__factory>;
-    getContractFactory(
-      name: "FlagWarsCore_v1_5_5_AntiDump",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.FlagWarsCore_v1_5_5_AntiDump__factory>;
-    getContractFactory(
-      name: "FlagWarsCore_v1_5_6_WhiteFlag",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.FlagWarsCore_v1_5_6_WhiteFlag__factory>;
     getContractFactory(
       name: "FlagWarsToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -230,40 +210,15 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.AchievementsSBT>;
     getContractAt(
-      name: "Core",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Core>;
-    getContractAt(
       name: "FlagToken",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.FlagToken>;
     getContractAt(
-      name: "FlagWarsCore_Production",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.FlagWarsCore_Production>;
-    getContractAt(
       name: "FlagWarsCore",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.FlagWarsCore>;
-    getContractAt(
-      name: "FlagWarsCore_v1_5_4",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.FlagWarsCore_v1_5_4>;
-    getContractAt(
-      name: "FlagWarsCore_v1_5_5_AntiDump",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.FlagWarsCore_v1_5_5_AntiDump>;
-    getContractAt(
-      name: "FlagWarsCore_v1_5_6_WhiteFlag",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.FlagWarsCore_v1_5_6_WhiteFlag>;
     getContractAt(
       name: "FlagWarsToken",
       address: string | ethers.Addressable,
@@ -362,33 +317,13 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.AchievementsSBT>;
     deployContract(
-      name: "Core",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Core>;
-    deployContract(
       name: "FlagToken",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FlagToken>;
     deployContract(
-      name: "FlagWarsCore_Production",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.FlagWarsCore_Production>;
-    deployContract(
       name: "FlagWarsCore",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FlagWarsCore>;
-    deployContract(
-      name: "FlagWarsCore_v1_5_4",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.FlagWarsCore_v1_5_4>;
-    deployContract(
-      name: "FlagWarsCore_v1_5_5_AntiDump",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.FlagWarsCore_v1_5_5_AntiDump>;
-    deployContract(
-      name: "FlagWarsCore_v1_5_6_WhiteFlag",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.FlagWarsCore_v1_5_6_WhiteFlag>;
     deployContract(
       name: "FlagWarsToken",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -502,40 +437,15 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.AchievementsSBT>;
     deployContract(
-      name: "Core",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Core>;
-    deployContract(
       name: "FlagToken",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FlagToken>;
     deployContract(
-      name: "FlagWarsCore_Production",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.FlagWarsCore_Production>;
-    deployContract(
       name: "FlagWarsCore",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FlagWarsCore>;
-    deployContract(
-      name: "FlagWarsCore_v1_5_4",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.FlagWarsCore_v1_5_4>;
-    deployContract(
-      name: "FlagWarsCore_v1_5_5_AntiDump",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.FlagWarsCore_v1_5_5_AntiDump>;
-    deployContract(
-      name: "FlagWarsCore_v1_5_6_WhiteFlag",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.FlagWarsCore_v1_5_6_WhiteFlag>;
     deployContract(
       name: "FlagWarsToken",
       args: any[],

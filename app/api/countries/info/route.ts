@@ -13,7 +13,7 @@ const publicClient = createPublicClient({
 })
 
 const ABI = parseAbi([
-  // New Core.sol: countries mapping
+  // FlagWarsCore mapping access
   'function countries(uint256 id) view returns (string name, address token, bool exists, uint256 price8, uint32 kappa8, uint32 lambda8, uint256 priceMin8)',
   'function remainingSupply(uint256 id) view returns (uint256)'
 ])

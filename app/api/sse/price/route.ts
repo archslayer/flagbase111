@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
           const countries = await Promise.all(
             countryIds.map(async (id) => {
               try {
-                // Read new Core.sol countries() mapping
+                // Read FlagWarsCore countries() mapping
                 const result = await publicClient.readContract({
                   address: CORE,
                   abi: ABI,

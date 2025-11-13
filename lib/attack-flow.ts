@@ -38,7 +38,7 @@ export async function getAttackerList(userAddress: string): Promise<AttackItem[]
 
     for (const country of allCountries) {
       try {
-        // Try new Core.sol format first (countries mapping), fallback to old getCountryInfo
+        // Use FlagWarsCore mapping (contractReader already points at FlagWarsCore)
         let countryInfo;
         try {
           countryInfo = await contractReader.getCountryInfo(country.id);
@@ -85,7 +85,7 @@ export async function getAttackedList(attackerId: number | null): Promise<Attack
       if (attackerId && country.id === attackerId) continue;
 
       try {
-        // Try new Core.sol format first (countries mapping), fallback to old getCountryInfo
+        // Use FlagWarsCore mapping (contractReader already points at FlagWarsCore)
         let countryInfo;
         try {
           countryInfo = await contractReader.getCountryInfo(country.id);
@@ -123,7 +123,7 @@ export async function estimateAttackFee(
   userAddress: string
 ): Promise<AttackFeeInfo> {
   try {
-    // Get attacker country price (not target) - try new Core.sol format first
+    // Get attacker country price (not target) directly from FlagWarsCore
     let attackerInfo;
     try {
       attackerInfo = await contractReader.getCountryInfo(fromId);

@@ -25,7 +25,7 @@ const CORE_ABI = parseAbi([
   'function getCountryInfo(uint256 countryId) view returns (string, address, uint256, uint256, uint256, bool)',
   'function remainingSupply(uint256 id) view returns (uint256)',
   'function getUserBalance(uint256 id, address user) view returns (uint256)',
-  'function cfg() view returns (address payToken, address feeToken, address treasury, address revenue, address commissions, uint16 buyFeeBps, uint16 sellFeeBps, uint16 referralShareBps, uint16 revenueShareBps, uint64 priceMin8, uint64 kappa, uint64 lambda, bool attackFeeInUSDC, uint64 tier1Price8, uint64 tier2Price8, uint64 tier3Price8, uint64 delta1_8, uint64 delta2_8, uint64 delta3_8, uint64 delta4_8, uint32 fee1_USDC6, uint32 fee2_USDC6, uint32 fee3_USDC6, uint32 fee4_USDC6, uint256 fee1_TOKEN18, uint256 fee2_TOKEN18, uint256 fee3_TOKEN18, uint256 fee4_TOKEN18)',
+  'function getConfig() view returns (address payToken, address feeToken, address treasury, address revenue, address commissions, uint16 buyFeeBps, uint16 sellFeeBps, uint16 referralShareBps, uint16 revenueShareBps, uint64 priceMin8, uint64 kappa, uint64 lambda, bool attackFeeInUSDC, uint64 tier1Price8, uint64 tier2Price8, uint64 tier3Price8, uint64 delta1_8, uint64 delta2_8, uint64 delta3_8, uint64 delta4_8, uint32 fee1_USDC6, uint32 fee2_USDC6, uint32 fee3_USDC6, uint32 fee4_USDC6, uint256 fee1_TOKEN18, uint256 fee2_TOKEN18, uint256 fee3_TOKEN18, uint256 fee4_TOKEN18)',
   // Custom errors for decode
   'error ErrInsufficientTreasuryUSDC()',
   'error ErrInvalidFee()',
@@ -82,15 +82,15 @@ async function main() {
   if (usdcDec !== 6) throw new Error(`USDC decimals != 6: got ${usdcDec}`)
   console.log('✓ USDC decimals = 6')
 
-  // 2) Read cfg() to get real kappa/buyFeeBps
+  // 2) Read getConfig() to get real kappa/buyFeeBps
   let cfg: any
   try {
-    cfg = await pc.readContract({ address: CORE, abi: CORE_ABI, functionName: 'cfg' })
-    console.log('✓ cfg() read successfully')
+    cfg = await pc.readContract({ address: CORE, abi: CORE_ABI, functionName: 'getConfig' })
+    console.log('✓ getConfig() read successfully')
     console.log('  kappa:', cfg.kappa.toString())
     console.log('  buyFeeBps:', cfg.buyFeeBps.toString())
   } catch (e) {
-    console.log('⚠️  cfg() failed, using fallback')
+    console.log('⚠️  getConfig() failed, using fallback')
     cfg = { kappa: 55000n, buyFeeBps: 0n }
   }
 
@@ -130,13 +130,13 @@ async function main() {
   
   if (remaining < amount18) throw new Error(`Insufficient remainingSupply: ${remaining} < ${amount18}`)
   
-  // Use real cfg() values
+  // Use real getConfig() values
   const kappa = BigInt(cfg.kappa)
   const buyFeeBps = BigInt(cfg.buyFeeBps)
   
   const { grossUSDC6, feeUSDC6, netUSDC6 } = calcBuyCostUSDC6Exact(amount18, price8, kappa, buyFeeBps)
   
-  console.log('Using cfg() values:')
+  console.log('Using getConfig() values:')
   console.log('  kappa:', kappa.toString())
   console.log('  buyFeeBps:', buyFeeBps.toString())
   console.log('Gross USDC6:', grossUSDC6.toString())

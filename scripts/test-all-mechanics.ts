@@ -18,7 +18,7 @@ const ABI = parseAbi([
   'function getCountryInfo(uint256 id) view returns (string, address, uint256, uint256, uint256, bool)',
   'function getUserBalance(uint256 id, address user) view returns (uint256)',
   'function remainingSupply(uint256 id) view returns (uint256)',
-  'function cfg() view returns (address, address, address, address, address, uint16, uint16, uint16, uint16, uint64, uint64, uint64, bool, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint32, uint32, uint32, uint32, uint256, uint256, uint256, uint256)'
+  'function getConfig() view returns (address, address, address, address, address, uint16, uint16, uint16, uint16, uint64, uint64, uint64, bool, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint32, uint32, uint32, uint32, uint256, uint256, uint256, uint256)'
 ])
 
 async function testAllMechanics() {
@@ -36,7 +36,7 @@ async function testAllMechanics() {
     const cfg = await client.readContract({
       address: CORE_ADDRESS,
       abi: ABI,
-      functionName: 'cfg'
+      functionName: 'getConfig'
     })
     
     // Validate addresses (payToken=0, feeToken=1, treasury=2, revenue=3, commissions=4)
