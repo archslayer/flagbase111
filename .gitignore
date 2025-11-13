@@ -1,101 +1,41 @@
-# Dependencies
+# environment
+.env
+.env.local
+.env.*
+!.env.example
+
+# dependencies
 node_modules/
-.pnp
-.pnp.js
 
-# Testing
-coverage/
-
-# Next.js
+# build artifacts
 .next/
 out/
-
-# Production
+dist/
 build/
+artifacts/
+cache/
+typechain-types/
 
-# Misc
-.DS_Store
-*.pem
+# compiled metadata
+tsconfig.tsbuildinfo
+*.swp
+*.swo
 
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Local env files
-.env*.local
-
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# IDE
-.vscode/
-.idea/
-
-# Logs
-logs
+# logs & reports
 *.log
+reports/
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
+# testing assets
+test/
+tests/
 coverage/
 
-# nyc test coverage
-.nyc_output
+# os junk
+.DS_Store
+Thumbs.db
 
-# Dependency directories
-node_modules/
-jspm_packages/
+# editor state
+.vscode/
+.idea/
+*.code-workspace
 
-# Optional npm cache directory
-.npm
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
-.env
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# Backup files
-backups/
-*.backup
