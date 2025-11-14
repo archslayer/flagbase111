@@ -3,6 +3,16 @@ import { getAddress } from 'viem'
 
 const DEFAULT_LIMIT = Number(process.env.MAX_FREE_ATTACKS_PER_USER || '2')
 
+interface FreeAttackDoc {
+  wallet: string
+  used: number
+  consumedTxs?: string[]
+  awarded?: number
+  totalLimit?: number
+  createdAt: Date
+  updatedAt: Date
+}
+
 type ProcessAttackEventInput = {
   wallet: string
   txHash: string
@@ -63,16 +73,17 @@ export async function processAttackEvent(input: ProcessAttackEventInput): Promis
     }
   }
 
-  const update = {
+  // strict Mongo tipleriyle uğraşmamak için update'i any tut
+  const update: any = {
     $inc: { used: 1 },
-    $push: { consumedTxs: txHash },
-    $set: { updatedAt: now }
+    $set: { updatedAt: now },
+    $push: { consumedTxs: txHash }
   }
 
   const updated = await freeAttacks.findOneAndUpdate(filter, update, { returnDocument: 'after' })
 
-  if (!updated.value) {
-    const doc = await freeAttacks.findOne<{ awarded?: number; used?: number; totalLimit?: number }>({ wallet })
+  if (!updated || !('value' in updated) || !updated.value) {
+    const doc = await freeAttacks.findOne<FreeAttackDoc & { awarded?: number; totalLimit?: number }>({ wallet })
     if (!doc) {
       await freeAttacks.insertOne({
         wallet,

@@ -226,7 +226,14 @@ export const contractReader = {
       const result = await coreContract.read.getAntiDumpInfo([
         BigInt(countryId),
         parseUnits(amount, 18)
-      ]);
+      ]) as [
+        bigint, // sellAmount
+        bigint, // sellPercentage
+        bigint, // extraFeeBps
+        bigint, // cooldown
+        bigint, // nextSellTime
+        boolean // canSellNow
+      ]
       
       return {
         sellAmount: result[0].toString(),
@@ -248,7 +255,7 @@ export const contractReader = {
       const result = await coreContract.read.getUserCooldownInfo([
         address as `0x${string}`,
         BigInt(countryId)
-      ]);
+      ]) as [boolean, bigint, bigint]
       
       return {
         isInCooldown: result[0],
@@ -266,7 +273,7 @@ export const contractReader = {
       // Use real contract call - getFreeAttackCount is now implemented in contract
       const result = await coreContract.read.getFreeAttackCount([
         address as `0x${string}`
-      ]);
+      ]) as [bigint, bigint, bigint]
       
       return {
         used: Number(result[0]),

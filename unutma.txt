@@ -1,1 +1,0 @@
-prod’da SIWE doğrulamasını dev bypass’ını kaldırmayı unutma.

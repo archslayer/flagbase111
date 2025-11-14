@@ -1,6 +1,6 @@
 {
-  "/api/config/attack/route": "app/api/config/attack/route.js",
-  "/api/me/route": "app/api/me/route.js",
-  "/attack/page": "app/attack/page.js",
-  "/api/countries/userBalance/route": "app/api/countries/userBalance/route.js"
+  "/api/erc20/balance/route": "app/api/erc20/balance/route.js",
+  "/market/page": "app/market/page.js",
+  "/api/activity/attacks/route": "app/api/activity/attacks/route.js",
+  "/api/sse/price/route": "app/api/sse/price/route.js"
 }

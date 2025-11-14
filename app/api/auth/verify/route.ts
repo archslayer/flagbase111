@@ -49,23 +49,31 @@ export async function POST(req: NextRequest) {
         // Nonce: ...
         // URI: ...
         // Chain: 84532
-        const lines = message.split('\n')
-        if (lines.length < 5) {
+        const rawLines = message.split('\n')
+        if (rawLines.length < 5) {
           return NextResponse.json({ error: 'invalid message format' }, { status: 400 })
         }
         
+        // TS tarafında types temiz olsun diye hepsini string'e çevir
+        const lines: string[] = rawLines.map((l: string) => String(l))
+        
         // Extract values from message
-        const addressLine = lines.find(l => l.startsWith('Address:'))
-        const uriLine = lines.find(l => l.startsWith('URI:'))
-        const chainLine = lines.find(l => l.startsWith('Chain:'))
+        const addressLine = lines.find((line: string) => line.startsWith('Address:'))
+        const uriLine = lines.find((line: string) => line.startsWith('URI:'))
+        const chainLine = lines.find((line: string) => line.startsWith('Chain:'))
         
         if (!addressLine || !uriLine || !chainLine) {
           return NextResponse.json({ error: 'invalid message format' }, { status: 400 })
         }
         
-        const messageAddress = addressLine.split(':')[1]?.trim()
-        const messageUri = uriLine.split(':')[1]?.trim()
-        const messageChainId = chainLine.split(':')[1]?.trim()
+        // her zaman string dönecek hale getir
+        const messageAddress = (addressLine.split(':')[1] ?? '').trim()
+        const messageUri = (uriLine.split(':')[1] ?? '').trim()
+        const messageChainId = (chainLine.split(':')[1] ?? '').trim()
+        
+        if (!messageAddress || !messageUri || !messageChainId) {
+          return NextResponse.json({ error: 'invalid message format' }, { status: 400 })
+        }
         
         // Validate domain matches request origin
         const requestOrigin = req.headers.get('origin') || req.headers.get('host') || ''
@@ -88,14 +96,14 @@ export async function POST(req: NextRequest) {
         }
         
         // Verify signature using viem
-        const recoveredAddress = await verifyMessage({
+        const recoveredAddress = (await verifyMessage({
           address: w as `0x${string}`,
           message,
           signature: signature as `0x${string}`,
-        })
+        }) as unknown) as string
         
         // Check if recovered address matches wallet
-        if (recoveredAddress.toLowerCase() !== w.toLowerCase()) {
+        if (typeof recoveredAddress === 'string' && recoveredAddress.toLowerCase() !== w.toLowerCase()) {
           return NextResponse.json({ error: 'signature verification failed' }, { status: 401 })
         }
       } catch (error: any) {
@@ -118,13 +126,13 @@ export async function POST(req: NextRequest) {
         
         // Dev'de de gerçek SIWE verify yap (ama daha toleranslı)
         try {
-          const recoveredAddress = await verifyMessage({
+          const recoveredAddress = (await verifyMessage({
             address: w as `0x${string}`,
             message,
             signature: signature as `0x${string}`,
-          })
+          }) as unknown) as string
           
-          if (recoveredAddress.toLowerCase() !== w.toLowerCase()) {
+          if (typeof recoveredAddress === 'string' && recoveredAddress.toLowerCase() !== w.toLowerCase()) {
             return NextResponse.json({ error: 'signature verification failed' }, { status: 401 })
           }
         } catch (error: any) {

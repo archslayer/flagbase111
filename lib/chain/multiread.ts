@@ -19,12 +19,12 @@ interface PriceResult {
 
 let publicClient: PublicClient | null = null
 
-function getPublicClient(): PublicClient {
+export function getPublicClient(): PublicClient {
   if (!publicClient) {
     publicClient = createPublicClient({
       chain: baseSepolia,
       transport: http(RPC_URL),
-    })
+    }) as PublicClient
   }
   return publicClient
 }

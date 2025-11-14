@@ -3,14 +3,9 @@
 // NEVER: Import-time side effects, client bundle inclusion
 // ALWAYS: Server-side only, graceful error handling, preserve old data on failure
 
-import { createPublicClient, http, type PublicClient } from 'viem'
-import { baseSepolia } from 'viem/chains'
 import { CORE_ADDRESS } from '@/lib/addresses'
 import { CORE_ABI } from '@/lib/core-abi'
 import { getDb } from '@/lib/mongodb'
-
-// TODO: set RPC in env if different from default
-const RPC_URL = process.env.NEXT_PUBLIC_RPC_BASE_SEPOLIA || process.env.ALCHEMY_BASE_SEPOLIA_URL || 'https://sepolia.base.org'
 
 // Configurable country IDs to poll
 const COUNTRY_IDS = [90, 44, 1] // Turkey, UK, US
@@ -54,17 +49,8 @@ export function getIndexerStatus() {
 }
 
 // Public client for reading from chain
-let publicClient: PublicClient | null = null
-
-function getPublicClient(): PublicClient {
-  if (!publicClient) {
-    publicClient = createPublicClient({
-      chain: baseSepolia,
-      transport: http(RPC_URL),
-    })
-  }
-  return publicClient
-}
+// Use helper from multiread to ensure consistent typing
+import { getPublicClient } from '../chain/multiread'
 
 /**
  * Fetch price for a single country from chain

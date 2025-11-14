@@ -12,13 +12,9 @@ const RPC = process.env.NEXT_PUBLIC_RPC_BASE_SEPOLIA as string
 
 const publicClient = createPublicClient({ chain: baseSepolia, transport: http(RPC) })
 
-export async function executeAttackJob (job: {
-  user: `0x${string}`
-  fromId: number
-  toId: number
-  amountToken18: bigint
-  idempotencyKey: string
-}) {
+import type { AttackJob } from '../lib/attackQueue/types'
+
+export async function executeAttackJob (job: AttackJob) {
   if (!(await tryBegin(job.idempotencyKey))) return
   try {
     const pk = process.env.SERVER_SIGNER_PK as `0x${string}`
@@ -39,7 +35,7 @@ export async function executeAttackJob (job: {
       address: CORE,
       abi: CORE_ABI,
       functionName: 'attack',
-      args: [BigInt(job.fromId), BigInt(job.toId), job.amountToken18],
+      args: [BigInt(job.fromId), BigInt(job.toId)] as any,
       value: ATTACK_FEE_WEI
     })
     const receipt = await publicClient.waitForTransactionReceipt({ hash })

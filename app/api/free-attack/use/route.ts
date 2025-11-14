@@ -6,6 +6,14 @@ export const dynamic = 'force-dynamic'
 const MAX_FREE = Number(process.env.MAX_FREE_ATTACKS_PER_USER || 2)
 const DEFAULT_DELTA = 0.0005
 
+interface FreeAttackDoc {
+  wallet: string
+  used: number
+  history?: { source: string; at: Date }[]
+  createdAt: Date
+  updatedAt: Date
+}
+
 let indexEnsured = false
 
 async function ensureIndex(db: Awaited<ReturnType<typeof getDb>>) {
@@ -47,59 +55,56 @@ export async function POST(req: NextRequest) {
 
     const db = await getDb()
     await ensureIndex(db)
-    const collection = db.collection('free_attacks')
+    const collection = db.collection<FreeAttackDoc>('free_attacks')
     const now = new Date()
 
-    // Try to increment existing record atomically
-    let granted = false
-    let record = await collection.findOneAndUpdate(
+    // strict Mongo tipleriyle uğraşmamak için update'i any tut
+    const update: any = {
+      $inc: { used: 1 },
+      $set: { updatedAt: now }
+    }
+
+    if (source) {
+      update.$push = { history: { source, at: now } }
+    }
+
+    const result = await collection.findOneAndUpdate(
       { wallet, used: { $lt: MAX_FREE } },
-      {
-        $inc: { used: 1 },
-        $set: { updatedAt: now },
-        ...(source
-          ? { $push: { history: { source, at: now } } }
-          : {}),
-      },
+      update,
       { returnDocument: 'after' }
     )
 
-    if (record.value) {
+    let doc: FreeAttackDoc | null = (result && 'value' in result && result.value ? result.value as FreeAttackDoc : null)
+    let granted = false
+
+    if (doc) {
       granted = true
     } else {
       try {
-        const insertDoc: any = {
+        const insertDoc: FreeAttackDoc = {
           wallet,
           used: 1,
+          history: source ? [{ source, at: now }] : [],
           createdAt: now,
-          updatedAt: now,
-        }
-        if (source) {
-          insertDoc.history = [{ source, at: now }]
+          updatedAt: now
         }
         await collection.insertOne(insertDoc)
-        record = { value: insertDoc }
+        doc = insertDoc
         granted = true
       } catch (err: any) {
         if (err?.code === 11000) {
           // Document already exists, try one more time to increment
           const retry = await collection.findOneAndUpdate(
             { wallet, used: { $lt: MAX_FREE } },
-            {
-              $inc: { used: 1 },
-              $set: { updatedAt: now },
-              ...(source
-                ? { $push: { history: { source, at: now } } }
-                : {}),
-            },
+            update,
             { returnDocument: 'after' }
           )
-          if (retry.value) {
-            record = retry
+          if (retry && 'value' in retry && retry.value) {
+            doc = retry.value as FreeAttackDoc
             granted = true
           } else {
-            const existing = await collection.findOne({ wallet })
-            record = { value: existing ?? null }
+            const existing = await collection.findOne<FreeAttackDoc>({ wallet })
+            doc = existing ?? null
             granted = false
           }
         } else {
@@ -108,7 +113,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const used = record.value?.used ?? 0
+    const used = doc?.used ?? 0
     const remaining = Math.max(0, MAX_FREE - used)
 
     if (!granted) {

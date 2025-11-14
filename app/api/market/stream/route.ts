@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Handle stream errors
-      stream.cancel = () => {
+      stream.cancel = async () => {
         cleanup()
       }
     },

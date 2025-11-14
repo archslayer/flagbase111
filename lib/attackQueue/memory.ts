@@ -1,4 +1,4 @@
-import type { AttackJob } from './index'
+import type { AttackJob } from './types'
 
 const byCountry: Record<number, AttackJob[]> = {}
 let working = new Set<number>()

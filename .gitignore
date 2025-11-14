@@ -11,11 +11,15 @@ node_modules/
 .next/
 out/
 dist/
-.turbo/
-.vercel/
 build/
 artifacts/
 cache/
+typechain-types/
+
+# compiled metadata
+tsconfig.tsbuildinfo
+*.swp
+*.swo
 
 # logs & reports
 *.log
@@ -26,21 +30,12 @@ test/
 tests/
 coverage/
 
-# admin panels
-app/admin/
-app/adminfb/
-app/api/admin/
-app/api/adminfb/
-
-# os junk & editors
+# os junk
 .DS_Store
 Thumbs.db
+
+# editor state
 .vscode/
 .idea/
 *.code-workspace
-
-# misc
-tsconfig.tsbuildinfo
-*.swp
-*.swo
 
