@@ -1,0 +1,33 @@
+version: 2
+updates:
+  # Enable version updates for npm (pnpm)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "archslayer"
+    labels:
+      - "dependencies"
+      - "security"
+    # Group updates to reduce PR noise
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+    # Security updates should be immediate
+    ignore:
+      # Ignore major version updates for critical dependencies
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "hardhat"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@openzeppelin/contracts"
+        update-types: ["version-update:semver-major"]
+
